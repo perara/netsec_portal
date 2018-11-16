@@ -1,8 +1,12 @@
 import sys
 import subprocess
 
+import motor
+
+from backend.analysis_engine.queue_manager import QueueManager
 from backend.ng import NG
 from backend.server import Webserver
+from backend.docker_env import Docker
 
 if __name__ == "__main__":
 
@@ -11,5 +15,14 @@ if __name__ == "__main__":
         ng.daemon = True
         ng.start()
 
-    s = Webserver(port=9999)
+    x = Docker()
+    x.start("mongo", "ntt_mongodb", "/data/db", expose=[27017])
+
+    db = motor.MotorClient().ntt
+
+    queue_manager = QueueManager(db)
+    queue_manager.daemon = True
+    queue_manager.start()
+
+    s = Webserver(db, port=9999)
     s.run()
