@@ -1,0 +1,45 @@
+
+
+<div class="col-12">
+
+
+  <h2>Analysis List</h2>
+  <hr>
+
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" value="open" [(ngModel)]='isOpen'>
+    <label class="form-check-label">Open</label>
+  </div>
+
+  <div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" value="closed" [(ngModel)]='isCLosed'>
+    <label class="form-check-label">Closed</label>
+  </div>
+
+  <table class="table table-hover table-responsive">
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Type</th>
+      <th>Source</th>
+      <th>Status</th>
+      <th>Last Update</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let analysis of analysisList ">
+      <td>{{analysis._id| slice:0:10}}</td>
+      <td>{{analysis.type}}</td>
+      <td>{{analysis.target}}</td>
+      <td>{{analysis.status}}</td>
+      <td>{{analysis.last_update}}</td>
+
+    </tr>
+    </tbody>
+
+
+  </table>
+
+
+</div>
+

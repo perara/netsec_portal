@@ -1,0 +1,61 @@
+
+
+
+
+  <!-- First Row -->
+  Add Knowledge:
+
+    <div class="col-12">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Ex: 8.8.8.8 | vg.no | http://vg.no"
+        [(ngModel)]="analysisInputItem"
+        (keyup)="addKnowledge($event)">
+    </div>
+
+
+  <!-- Second Row -->
+    <div class="col-12">
+
+      <div class="form-group">
+        <label for="exampleFormControlSelect2">Targets</label>
+        <select [(ngModel)]="analysisQuery.targets" multiple class="form-control" id="exampleFormControlSelect2">
+          <option *ngFor="let analysisItem of analysisQuery.targets" [ngValue]="analysisItem">{{analysisItem.type}} - {{analysisItem.data}}</option>
+        </select>
+      </div>
+
+    </div>
+
+  <!-- Second Row -->
+  <div class="col-12">
+
+    <div class="form-group">
+      <label for="exampleFormControlSelect2">Primary Target:</label>
+      <select [(ngModel)]="primaryTarget" class="form-control" id="exampleFormControlSelect3">
+        <option *ngFor="let analysisItem of analysisQuery.targets" [ngValue]="analysisItem">{{analysisItem.type}} - {{analysisItem.data}}</option>
+      </select>
+    </div>
+
+  </div>
+
+
+  <!-- Third Row -->
+
+    <div class="col-12">
+
+      <button class="btn btn-success btn-md form-control" (click)="submitAnalysis()">Create Analysis</button>
+
+
+
+
+  </div>
+
+
+
+
+
+
+
+
+
