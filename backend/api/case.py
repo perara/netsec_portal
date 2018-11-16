@@ -8,7 +8,7 @@ import hashlib
 
 
 
-class UploadAnalysisHandler(tornado.web.RequestHandler):
+class UploadCaseHandler(tornado.web.RequestHandler):
 
     async def post(self):
         # Retrieve DB
@@ -17,7 +17,7 @@ class UploadAnalysisHandler(tornado.web.RequestHandler):
         # Retrieve post data
         data = json.loads(self.request.body)
 
-        # Generate sha256 for analysis
+        # Generate sha256 for case
         id_hash = hashlib.sha256(self.request.body).hexdigest()
         last_update = time.time()
 
@@ -26,17 +26,17 @@ class UploadAnalysisHandler(tornado.web.RequestHandler):
         new_document.update(data)
 
         # Check if document already exists
-        n_documents = await db.analysis.count_documents(dict(sha256=id_hash))
+        n_documents = await db.case.count_documents(dict(sha256=id_hash))
 
         if n_documents == 0:
-            inserted_document = await db.analysis.insert_one(new_document)
+            inserted_document = await db.case.insert_one(new_document)
         else:
-            self.set_status(500)  # TODO proper error code
+            self.set_status(400)
             self.write(dict(
                 success=True,
                 data="Attempted insertion of analysis failed. Already exists!"
             ))
-            return;
+            return
 
         self.set_status(200)
         self.write(dumps(dict(
@@ -49,17 +49,33 @@ class UploadAnalysisHandler(tornado.web.RequestHandler):
     get = post
 
 
-class GetAnalysisHandler(tornado.web.RequestHandler):
+class GetOneCaseHandler(tornado.web.RequestHandler):
+
+    async def get(self, sha256):
+        db = self.settings['db']
+
+        case = await db.case.find_one(dict(sha256=sha256))
+
+        if not case:
+            self.set_status(400)
+            self.write(dict(
+                success=False,
+                data="Attempted insertion of analysis failed. Already exists!"
+            ))
+            return
+
+
+class GetAllCasesHandler(tornado.web.RequestHandler):
 
     async def get(self):
         db = self.settings['db']
 
-        results = [document async for document in db["analysis"].find({})]
+        results = [document async for document in db.case.find({})]
         self.write(dumps(results))
         self.set_header("Content-Type", "application/json")
 
 
-class AnalysisToolsHandler(tornado.web.RequestHandler):
+class CaseToolsHandler(tornado.web.RequestHandler):
 
     async def get(self):
 
@@ -69,17 +85,17 @@ class AnalysisToolsHandler(tornado.web.RequestHandler):
         return
 
 
-class RunAnalysisHandler(tornado.web.RequestHandler):
+class RunCaseHandler(tornado.web.RequestHandler):
 
     async def get(self):
         pass
-        # Get running analysis
+        # Get running case
 
     async def post(self):
         db = self.settings['db']
         data = json.loads(self.request.body)
 
-        if "analysis" not in data or "sha256" not in data["analysis"] or "services" not in data:
+        if "case" not in data or "sha256" not in data["case"] or "services" not in data:
             self.set_status(500)  # TODO type
             self.write(dict(
                 success=False,
@@ -87,13 +103,13 @@ class RunAnalysisHandler(tornado.web.RequestHandler):
             ))
             return
 
-        sha256 = data["analysis"]["sha256"]
+        sha256 = data["case"]["sha256"]
         services = data["services"]
 
-        analysis = await db.analysis.find_one(dict(sha256=sha256))
+        case = await db.case.find_one(dict(sha256=sha256))
 
         db.analysis_queue.insert_one(dict(
-            sha256=analysis.sha256,
+            sha256=case.sha256,
             done=False,
             started=False,
             last_update=int(time.time())
@@ -103,7 +119,7 @@ class RunAnalysisHandler(tornado.web.RequestHandler):
         self.write(dict(
             success=True,
             data=dict(
-                queue_id=engine_analysis.sha256,
+                queue_id=case.sha256,
                 message="Analysis queued in the analysis engine."
             )
         ))

@@ -6,7 +6,7 @@ import time
 
 class Analysis(Process):
 
-    def __init__(self, analysis, services):
+    def __init__(self, analysis, services, db):
         super().__init__()
         self.analysis = analysis
         self.services = services

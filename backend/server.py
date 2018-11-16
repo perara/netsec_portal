@@ -5,9 +5,9 @@ import tornado.web
 from tornado.ioloop import IOLoop
 import os
 from backend import logger
-from backend.api.analysis import UploadAnalysisHandler, GetAnalysisHandler, RunAnalysisHandler
 
 # https://github.com/mongodb/motor/blob/master/doc/tutorial-tornado.rst#tutorial-using-motor-with-tornado
+from backend.api.case import UploadCaseHandler, GetOneCaseHandler, GetAllCasesHandler, RunCaseHandler
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -19,10 +19,12 @@ class Webserver(threading.Thread):
         self.db = db
         self._port = port
         self._app  = tornado.web.Application([
-            (r'/api/analysis/upload', UploadAnalysisHandler),
-            (r'/api/analysis/get', GetAnalysisHandler),
-            (r'/api/analysis/run', RunAnalysisHandler),
-            #(r"/test", TestHandler),
+            (r'/api/case/upload', UploadCaseHandler),
+            (r'/api/case/get', GetAllCasesHandler),
+            (r'/api/case/get/(.*)', GetOneCaseHandler),
+            (r'/api/case/run', RunCaseHandler),
+
+
             (r'/(favicon\.ico)', tornado.web.StaticFileHandler, {'path': os.path.join(dir_path, "..", "dist", "favicon.ico")}),
             (r'/(.*)', tornado.web.StaticFileHandler, {"default_filename": "index.html", 'path': os.path.join(dir_path, "..", "dist")}),
 

@@ -27,13 +27,12 @@
     </tr>
     </thead>
     <tbody>
-    <tr *ngFor="let analysis of analysisList ">
-      <td>{{analysis._id| slice:0:10}}</td>
-      <td>{{analysis.type}}</td>
-      <td>{{analysis.target}}</td>
-      <td>{{analysis.status}}</td>
-      <td>{{analysis.last_update}}</td>
-
+    <tr class="clickable" *ngFor="let case of caseList " [routerLink]="['/case', case.sha256]">
+      <td>{{case.sha256| slice:0:10}}</td>
+      <td>{{case.type}}</td>
+      <td>{{case.target}}</td>
+      <td>{{case.status}}</td>
+      <td>{{case.last_update}}</td>
     </tr>
     </tbody>
 

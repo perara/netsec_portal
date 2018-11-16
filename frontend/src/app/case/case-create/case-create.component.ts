@@ -1,25 +1,26 @@
 import { Component, OnInit } from '@angular/core';
-import {ValidatorService} from "../validator.service";
+import {ValidatorService} from "../../validator.service";
 import {HttpClient} from "@angular/common/http";
-import {AnalysisQuery} from "../analysis-query";
-import {AnalysisItem} from "../analysis-item";
+import {AnalysisQuery} from "../../classes/analysis-query";
+import {AnalysisItem} from "../../classes/analysis-item";
+import {CaseService} from "../../services/case.service";
 
 @Component({
-  selector: 'app-analysis-create',
-  templateUrl: './analysis-create.component.html',
-  styleUrls: ['./analysis-create.component.scss']
+  selector: 'app-case-create',
+  templateUrl: './case-create.component.html',
+  styleUrls: ['./case-create.component.scss']
 })
 
 
 
-export class AnalysisCreateComponent implements OnInit {
+export class CaseCreateComponent implements OnInit {
 
   analysisInputItem: String = "";
   analysisQuery: AnalysisQuery = new AnalysisQuery();
   primaryTarget: AnalysisItem;
 
 
-  constructor(public validator: ValidatorService, public httpClient:HttpClient) {
+  constructor(public validator: ValidatorService,  public caseService: CaseService) {
 
   }
 
@@ -33,9 +34,6 @@ export class AnalysisCreateComponent implements OnInit {
     this.analysisQuery.type = <String>this.primaryTarget.type;
     this.analysisQuery.status = "open";
 
-    this.httpClient
-      .post<AnalysisQuery>("/api/analysis/upload", this.analysisQuery)
-      .subscribe((value: Object) => {console.log(value)})
 
 
   }
@@ -56,6 +54,10 @@ export class AnalysisCreateComponent implements OnInit {
     this.analysisQuery.targets.push(<AnalysisItem>{
       data: this.analysisInputItem,
       type: type
+    });
+
+    this.caseService.create(this.analysisQuery).subscribe(data=>{
+      console.log(data)
     });
 
     this.analysisInputItem = ""

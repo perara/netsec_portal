@@ -38,6 +38,10 @@ class QueueManager(Process):
 
         queued_item = await self.db.analysis_queue.find_one(dict(started=False))
 
+        if not queued_item:
+            time.sleep(ANALYSIS_QUEUE_WAIT)
+            return
+
         analysis = queued_item.analysis
         services = queued_item.services
 

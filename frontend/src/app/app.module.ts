@@ -4,28 +4,39 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { PagenotfoundComponent } from './pagenotfound/pagenotfound.component';
-import { AnalysisComponent } from './analysis/analysis.component';
-import { AnalysisListComponent } from './analysis-list/analysis-list.component';
-import { AnalysisCreateComponent } from './analysis-create/analysis-create.component';
+import { PagenotfoundComponent } from './app/pagenotfound/pagenotfound.component';
+
 import {HttpClientModule} from "@angular/common/http";
+import { MenuComponent } from './app/menu/menu.component';
+import { HeaderComponent } from './app/header/header.component';
+import {CaseCreateComponent} from "./case/case-create/case-create.component";
+import {CaseComponent} from "./case/case.component";
+import {CaseListComponent} from "./case/case-list/case-list.component";
+import { CaseViewComponent } from './case/case-view/case-view.component';
+import {HttpErrorHandler} from "./services/http-error-handler.service";
 
 @NgModule({
   declarations: [
     AppComponent,
-    AnalysisComponent,
+
     DashboardComponent,
     PagenotfoundComponent,
-    AnalysisComponent,
-    AnalysisListComponent,
-    AnalysisCreateComponent
+    CaseComponent,
+    CaseListComponent,
+    CaseCreateComponent,
+    MenuComponent,
+    HeaderComponent,
+    CaseViewComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [
+    HttpErrorHandler
+
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
