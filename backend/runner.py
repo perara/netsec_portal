@@ -15,7 +15,12 @@ if __name__ == "__main__":
         ng.start()
 
     x = Docker()
-    x.start("mongo", "ntt_mongodb", "/data/db", expose=[27017])
+    x.start("mongo", "ntt_mongodb", ["/data/db"], expose=[27017])
+    x.start("perara/docker-suricata", "ntt_suricata", ["/var/log/suricata", "/pcaps", "/reports"], args=["-i eth0"])
+
+
+    # docker run -it --net=host -v $(pwd)/logs:/var/log/suricata \
+    # 	jasonish/suricata -i <interface>
 
     db = motor.MotorClient().ntt
 

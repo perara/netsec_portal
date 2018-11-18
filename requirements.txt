@@ -4,3 +4,5 @@ ujson
 docker
 pymongo
 motor
+dpkt
+python_socketio

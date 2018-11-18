@@ -31,7 +31,6 @@ export class CaseCreateComponent implements OnInit {
 
 
     this.caseService.create(this.case).subscribe(data=>{
-      console.log(data)
     });
 
 
@@ -54,7 +53,8 @@ export class CaseCreateComponent implements OnInit {
 
     let caseItem = <CaseObject>{
       name: this.caseSourceInput,
-      type: type
+      type: type,
+      depth: 0
     };
 
     if(!this.case.source) {

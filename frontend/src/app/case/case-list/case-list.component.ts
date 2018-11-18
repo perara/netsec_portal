@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {CaseService} from "../../services/case.service";
 import {CaseObject} from "../../classes/case-object";
+import {WSCaseNamespace} from "../../app.ws";
 
 @Component({
   selector: 'app-case-list',
@@ -15,10 +16,13 @@ export class CaseListComponent implements OnInit {
 
   constructor(
     public caseService: CaseService,
+    private socket: WSCaseNamespace
   ) { }
 
   ngOnInit() {
     this.getAllCases();
+
+    this.socket.on("create", this.onCaseCreate)
   }
 
   getAllCases(){
@@ -27,6 +31,10 @@ export class CaseListComponent implements OnInit {
       this.caseList = data.reverse();
     });
 
+  }
+
+  onCaseCreate(){
+    console.log(":D")
   }
 
 }

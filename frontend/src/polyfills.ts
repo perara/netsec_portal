@@ -34,6 +34,8 @@
 // import 'core-js/es6/weak-map';
 // import 'core-js/es6/set';
 
+(window as any).global = window;
+
 /**
  * If the application will be indexed by Google Search, the following is required.
  * Googlebot uses a renderer based on Chrome 41.

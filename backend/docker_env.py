@@ -17,10 +17,11 @@ class Docker:
     def is_available(self):
         return True
 
-    def start(self, image_name, container_name, container_data_path, expose=[]):
+    def start(self, image_name, container_name, container_data_paths, expose=[], args=[]):
         data_dir = os.path.join(dir_path, "docker", container_name)
         os.makedirs(data_dir, exist_ok=True)
-        path_link = "%s:%s" % (data_dir, container_data_path)
+
+        path_links = ["%s:%s" % ((data_dir + x), x) for x in container_data_paths]
 
         image_full_name = image_name + ":latest"
         logger.info("Starting container %s", container_name)
@@ -34,9 +35,9 @@ class Docker:
             try:
                 container = self.client.containers.get(container_name)
             except docker.errors.NotFound:
-                container = self.client.containers.run(image_full_name,
+                container = self.client.containers.run(image_full_name, ' '.join(args),
                                                        name=container_name,
-                                                       volumes=[path_link],
+                                                       volumes=path_links,
                                                        ports={"%s/tcp" % x: "%s/tcp" % x for x in expose},
                                                        detach=True)
 

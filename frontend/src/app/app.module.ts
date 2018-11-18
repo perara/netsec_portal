@@ -1,6 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-
+import {NgModule} from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -17,6 +16,13 @@ import {HttpErrorHandler} from "./services/http-error-handler.service";
 import { SettingsComponent } from './settings/settings.component';
 import { SettingsAnalysisToolsComponent } from './settings/settings-analysis-tools/settings-analysis-tools.component';
 import { SettingsUsersComponent } from './settings/settings-users/settings-users.component';
+import {SocketIoModule, SocketIoConfig, Socket} from 'ngx-socket-io';
+import { PcapAnalyzerComponent } from './pcap/pcap-analyzer/pcap-analyzer.component';
+import {WSCaseNamespace, WSPCAPNamespace, WSRootNamespace} from "./app.ws";
+
+
+
+
 
 @NgModule({
   declarations: [
@@ -32,15 +38,20 @@ import { SettingsUsersComponent } from './settings/settings-users/settings-users
     CaseViewComponent,
     SettingsComponent,
     SettingsAnalysisToolsComponent,
-    SettingsUsersComponent
+    SettingsUsersComponent,
+    PcapAnalyzerComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    SocketIoModule
   ],
   providers: [
-    HttpErrorHandler
+    HttpErrorHandler,
+    WSRootNamespace,
+    WSCaseNamespace,
+    WSPCAPNamespace
 
   ],
   bootstrap: [AppComponent]

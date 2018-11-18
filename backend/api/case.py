@@ -7,7 +7,6 @@ import json
 import hashlib
 
 
-
 class UploadCaseHandler(tornado.web.RequestHandler):
 
     async def post(self):
@@ -43,6 +42,7 @@ class UploadCaseHandler(tornado.web.RequestHandler):
             success=True,
             data=new_document
         )))
+
         self.set_header("Content-Type", "application/json")
         return
 

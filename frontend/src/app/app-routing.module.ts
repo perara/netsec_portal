@@ -8,11 +8,13 @@ import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {CaseComponent} from "./case/case.component";
 import {CaseViewComponent} from "./case/case-view/case-view.component";
 import {SettingsComponent} from "./settings/settings.component";
+import {PcapAnalyzerComponent} from "./pcap/pcap-analyzer/pcap-analyzer.component";
 
 const routes: Routes = [
   //{ path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'case', component: CaseComponent },
+  { path: 'pcap', component: PcapAnalyzerComponent },
   { path: 'case/:id', component: CaseViewComponent },
   { path: 'settings', component: SettingsComponent},
   { path: '**', component: PagenotfoundComponent },
