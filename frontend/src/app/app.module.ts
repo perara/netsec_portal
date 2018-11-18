@@ -14,6 +14,9 @@ import {CaseComponent} from "./case/case.component";
 import {CaseListComponent} from "./case/case-list/case-list.component";
 import { CaseViewComponent } from './case/case-view/case-view.component';
 import {HttpErrorHandler} from "./services/http-error-handler.service";
+import { SettingsComponent } from './settings/settings.component';
+import { SettingsAnalysisToolsComponent } from './settings/settings-analysis-tools/settings-analysis-tools.component';
+import { SettingsUsersComponent } from './settings/settings-users/settings-users.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +29,10 @@ import {HttpErrorHandler} from "./services/http-error-handler.service";
     CaseCreateComponent,
     MenuComponent,
     HeaderComponent,
-    CaseViewComponent
+    CaseViewComponent,
+    SettingsComponent,
+    SettingsAnalysisToolsComponent,
+    SettingsUsersComponent
   ],
   imports: [
     BrowserModule,

@@ -1,3 +1,62 @@
-<p>
-  case-view works!
-</p>
+
+<div class="row">
+
+  <div class="col-8">
+    <h2>Case against the {{ case?.source.type }} {{case?.source.name}}</h2>
+
+  </div>
+
+  <div class="col-4">
+    <button class="btn btn-info">Analyze Selected</button>
+    <button class="btn btn-warning">Analyze All</button>
+  </div>
+
+</div>
+
+<hr>
+
+<div class="row">
+
+  <div class="col-8">
+    <h2>Object: {{ case?.objects[selectedObjectIndex].name }} ({{ case?.objects[selectedObjectIndex].type }})</h2>
+  </div>
+
+  <div class="col-4">
+
+    <h2>Objects</h2>
+
+    <table class="table table-hover" (keydown)="scrollTable($event)" tabindex="0">
+      <thead>
+      <tr>
+        <th>Type</th>
+        <th>Object</th>
+        <th>Analyzed</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr
+        *ngFor="let object of case?.objects; let i = index;"
+        (click)="selectObject(i)"
+        [ngClass]="{'table-primary': selectedObjectIndex  === i}">
+        <td>
+          {{object.type}}
+        </td>
+        <td>
+          {{object.name}}
+        </td>
+
+        <td>TODO</td>
+
+
+      </tr>
+
+
+      </tbody>
+
+    </table>
+
+
+  </div>
+
+</div>
+

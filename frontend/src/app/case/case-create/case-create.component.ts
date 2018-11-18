@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {ValidatorService} from "../../validator.service";
-import {HttpClient} from "@angular/common/http";
-import {AnalysisQuery} from "../../classes/analysis-query";
-import {AnalysisItem} from "../../classes/analysis-item";
 import {CaseService} from "../../services/case.service";
+import {Case} from "../../classes/case";
+import {CaseObject} from "../../classes/case-object";
 
 @Component({
   selector: 'app-case-create',
@@ -15,9 +14,8 @@ import {CaseService} from "../../services/case.service";
 
 export class CaseCreateComponent implements OnInit {
 
-  analysisInputItem: String = "";
-  analysisQuery: AnalysisQuery = new AnalysisQuery();
-  primaryTarget: AnalysisItem;
+  caseSourceInput: String = "";
+  case: Case = new Case();
 
 
   constructor(public validator: ValidatorService,  public caseService: CaseService) {
@@ -29,12 +27,15 @@ export class CaseCreateComponent implements OnInit {
   }
 
   submitAnalysis(){
-
-    this.analysisQuery.target = this.primaryTarget.data;
-    this.analysisQuery.type = <String>this.primaryTarget.type;
-    this.analysisQuery.status = "open";
+    this.case.status = "open";
 
 
+    this.caseService.create(this.case).subscribe(data=>{
+      console.log(data)
+    });
+
+
+    this.case = new Case();
 
   }
 
@@ -44,23 +45,26 @@ export class CaseCreateComponent implements OnInit {
     }
 
 
-    let type = this.validator.validate(this.analysisInputItem);
-    /*if(!type){
+    let type = this.validator.validate(this.caseSourceInput);
+    if(!type){
       // Not valid
       // TODO message that validation failed
       return
-    }*/
+    }
 
-    this.analysisQuery.targets.push(<AnalysisItem>{
-      data: this.analysisInputItem,
+    let caseItem = <CaseObject>{
+      name: this.caseSourceInput,
       type: type
-    });
+    };
 
-    this.caseService.create(this.analysisQuery).subscribe(data=>{
-      console.log(data)
-    });
+    if(!this.case.source) {
+      this.case.source = caseItem;
+    }
 
-    this.analysisInputItem = ""
+    this.case.objects.push(caseItem);
+
+
+    this.caseSourceInput = ""
   }
 
 

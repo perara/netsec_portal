@@ -64,6 +64,9 @@ class GetOneCaseHandler(tornado.web.RequestHandler):
             ))
             return
 
+        self.write(dumps(case))
+        self.set_header("Content-Type", "application/json")
+
 
 class GetAllCasesHandler(tornado.web.RequestHandler):
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import {AnalysisItem} from "../../classes/analysis-item";
 import {CaseService} from "../../services/case.service";
+import {CaseObject} from "../../classes/case-object";
 
 @Component({
   selector: 'app-case-list',
@@ -11,7 +11,7 @@ export class CaseListComponent implements OnInit {
   isCLosed: boolean = false;
   isOpen: boolean = true;
 
-  caseList: AnalysisItem[];
+  caseList: CaseObject[];
 
   constructor(
     public caseService: CaseService,
@@ -23,7 +23,7 @@ export class CaseListComponent implements OnInit {
 
   getAllCases(){
 
-    this.caseService.getAllCases().subscribe((data: AnalysisItem[]) => {
+    this.caseService.getAllCases().subscribe((data: CaseObject[]) => {
       this.caseList = data.reverse();
     });
 

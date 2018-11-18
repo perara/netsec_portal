@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
-import {catchError} from "rxjs/operators";
+import {catchError, map} from "rxjs/operators";
 import {HandleError, HttpErrorHandler} from "./http-error-handler.service";
-import {AnalysisQuery} from "../classes/analysis-query";
-
+import {Case} from "../classes/case";
+import {Observable} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -19,8 +19,8 @@ export class CaseService {
     this.handleError = httpErrorHandler.createHandleError('CustomerService');
   }
 
-  getCase(caseID){
-    return this.http.get("/api/case/get/" + caseID)
+  getCase(caseID): Observable<Case>{
+    return <Observable<Case>>this.http.get("/api/case/get/" + caseID)
       .pipe(
         catchError(this.handleError('getCase', []))
       )
@@ -37,7 +37,7 @@ export class CaseService {
 
   create(data){
     return this.http
-      .post<AnalysisQuery>("/api/case/upload", data)
+      .post<Case>("/api/case/upload", data)
       .pipe(
         catchError(this.handleError('getAllCases', []))
       );
