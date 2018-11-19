@@ -8,6 +8,8 @@ import {WSPCAPNamespace} from "../../app.ws";
 })
 export class PcapAnalyzerComponent implements OnInit {
 
+  public showPcapUploader: boolean = false;
+
   constructor(private ws: WSPCAPNamespace) { }
 
   ngOnInit() {
