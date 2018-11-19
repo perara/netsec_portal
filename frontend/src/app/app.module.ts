@@ -19,10 +19,8 @@ import { SettingsUsersComponent } from './settings/settings-users/settings-users
 import {SocketIoModule, SocketIoConfig, Socket} from 'ngx-socket-io';
 import { PcapAnalyzerComponent } from './pcap/pcap-analyzer/pcap-analyzer.component';
 import {WSCaseNamespace, WSPCAPNamespace, WSRootNamespace} from "./app.ws";
-
-
-
-
+import {FileDropModule} from "ngx-file-drop";
+import { PcapUploaderComponent } from './pcap/pcap-analyzer/pcap-uploader/pcap-uploader.component';
 
 @NgModule({
   declarations: [
@@ -39,13 +37,15 @@ import {WSCaseNamespace, WSPCAPNamespace, WSRootNamespace} from "./app.ws";
     SettingsComponent,
     SettingsAnalysisToolsComponent,
     SettingsUsersComponent,
-    PcapAnalyzerComponent
+    PcapAnalyzerComponent,
+    PcapUploaderComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    SocketIoModule
+    SocketIoModule,
+    FileDropModule
   ],
   providers: [
     HttpErrorHandler,

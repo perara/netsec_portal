@@ -10,6 +10,7 @@ from backend import logger
 
 # https://github.com/mongodb/motor/blob/master/doc/tutorial-tornado.rst#tutorial-using-motor-with-tornado
 from backend.api.case import UploadCaseHandler, GetOneCaseHandler, GetAllCasesHandler, RunCaseHandler
+from backend.api.pcap import PCAPUploadHandler
 from backend.api.settings import SettingsAnalysisToolsHandler
 from backend.websockets.case import CaseNamespace
 from backend.websockets.pcap import PCAPNamespace
@@ -42,7 +43,7 @@ class Webserver(threading.Thread):
         self._port = port
         self._app  = tornado.web.Application([
             (r"/socket.io/", socketio.get_tornado_handler(self.sio)),
-
+            (r'/api/pcap/upload', PCAPUploadHandler),
             (r'/api/case/upload', UploadCaseHandler),
             (r'/api/case/get', GetAllCasesHandler),
             (r'/api/case/get/(.*)', GetOneCaseHandler),
