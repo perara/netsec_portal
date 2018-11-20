@@ -1,22 +1,82 @@
 
 <h2>Forensics: PCAP</h2>
-<div class="center">
-  <file-drop headertext="Drop pcap files here" (onFileDrop)="dropped($event)"
-             (onFileOver)="fileOver($event)" (onFileLeave)="fileLeave($event)">
 
-  </file-drop>
-  <div class="upload-table">
-    <table class="table">
-      <thead>
-      <tr>
-        <th>Name</th>
-      </tr>
-      </thead>
-      <tbody class="upload-name-style">
-      <tr *ngFor="let item of files; let i=index">
-        <td><strong>{{ item.relativePath }}</strong></td>
-      </tr>
-      </tbody>
-    </table>
+
+<div class="row">
+
+
+
+  <div class="col-12">
+
+    <div class="form form-inline">
+      <div *ngFor="let item of alerts | keyvalue; let i = index;" class="form-check" style="padding-right:20px;">
+        <label class="form-check-label">
+          <input type="checkbox" class="form-check-input" [(ngModel)]="item.value.checked" (ngModelChange)="filterChange()" [value]="item.key"> {{item.key}}
+        </label>
+      </div>
+    </div>
+
+    <div class="upload-table">
+      <table class="table">
+        <thead>
+        <tr>
+          <th>#id</th>
+          <th>proto</th>
+          <th>src => dst</th>
+          <th>Flowbits</th>
+          <th>Signature</th>
+          <th>Data</th>
+          <th>Misc</th>
+        </tr>
+        </thead>
+        <tbody class="upload-name-style">
+        <tr *ngFor="let alert of filteredAlerts; let i=index">
+          <td>{{ alert.pcap_cnt }}</td>
+          <td>({{alert.proto}})</td>
+
+          <td>
+            {{ alert.src_ip}}:{{ alert.src_port}}<br>
+            {{ alert.dest_ip}}:{{ alert.dest_port}}
+          </td>
+
+          <td>
+            {{ alert.metadata?.flowbits}}<br>
+            {{ alert.alert?.signature}}
+          </td>
+
+          <td>
+
+            <div *ngIf="hasKey(alert, 'http')">
+              {{alert.http.hostname}}/{{alert.url}}<br>
+              {{alert.http.http_user_agent}}<br>
+              {{alert.http.http_content_type}} - {{alert.http.http_method}} - {{alert.http.protocol}} - {{alert.http.status}} - {{alert.http.length}}
+            </div>
+
+            <div *ngIf="hasKey(alert, 'dns')">
+              <div *ngFor="let dns of alert.dns.answers">
+                {{dns.rrtype}} - {{dns.rrname}} ({{dns.rdata}})
+              </div>
+            </div>
+          </td>
+          <td>
+            {{alert.fileinfo | json}}
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
+
+  <div class="col-4">
+
+    <file-drop headertext="Drop pcap files here" (onFileDrop)="dropped($event)"
+               (onFileOver)="fileOver($event)" (onFileLeave)="fileLeave($event)">
+    </file-drop>
+
+  </div>
+
+
+
 </div>
+

@@ -21,7 +21,14 @@ class Docker:
         data_dir = os.path.join(dir_path, "docker", container_name)
         os.makedirs(data_dir, exist_ok=True)
 
-        path_links = ["%s:%s" % ((data_dir + x), x) for x in container_data_paths]
+        # Process bind volumes
+        path_links = []
+        for container_path in container_data_paths:
+            host_path = (data_dir + container_path)
+            path_links.append("%s:%s" % (host_path, container_path))
+
+            # Create initial host path
+            os.makedirs(host_path, exist_ok=True)
 
         image_full_name = image_name + ":latest"
         logger.info("Starting container %s", container_name)

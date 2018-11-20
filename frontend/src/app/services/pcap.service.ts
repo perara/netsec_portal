@@ -21,7 +21,7 @@ export class PcapService {
 
   upload(data){
     return this.http
-      .post("/api/pcap/upload", data, { responseType: 'blob' })
+      .post("/api/pcap/upload", data)
       .pipe(
         catchError(this.handleError('getAllCases', []))
       );

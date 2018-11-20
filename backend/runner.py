@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     x = Docker()
     x.start("mongo", "ntt_mongodb", ["/data/db"], expose=[27017])
-    x.start("perara/docker-suricata", "ntt_suricata", ["/var/log/suricata", "/pcaps", "/reports", "/socket"], args=[])
+    x.start("perara/suricata-test", "ntt_suricata", ["/var/log/suricata", "/pcaps", "/reports", "/socket"], args=[])
 
     db = motor.MotorClient().ntt
 

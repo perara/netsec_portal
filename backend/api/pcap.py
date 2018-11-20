@@ -1,3 +1,5 @@
+import time
+
 import tornado.web
 import os
 from backend import runtime_variables
@@ -25,18 +27,20 @@ class PCAPUploadHandler(tornado.web.RequestHandler):
             runtime_variables.suricata_virtual_socket_path,
             runtime_variables.suricata_virtual_pcap_path,
             runtime_variables.suricata_virtual_report_path,
-            verbose=True)
-        res = x.queue_pcap("2016-12-13-domaincop247.com-malspam-traffic.pcap")
+            verbose=False)
+        res = x.queue_pcap(fname)
 
-        # Read results
+        # Read results # TODO async?
+        eve_path = os.path.join(runtime_variables.suricata_full_report_path, fname, "eve.json")
+        while not os.path.exists(eve_path):
+            time.sleep(.1)
+
+        # Parse results
         items = []
-        with open(os.path.join(runtime_variables.suricata_full_report_path, fname, "eve.json"), "rb") as f:
-            items.append(f.readline())
+        with open(eve_path, "r") as f:
+            for line in f.readlines():
+                items.append(json.loads(line))
 
-
-        print(items)
         self.write(dict(success=True, message=items))
+        self.set_header("Content-Type", "application/json")
         return
-
-        #self.write(dict(success=False))
-        #self.set_status(200)
