@@ -1,60 +1,34 @@
 
-
-
-
-  <!-- First Row -->
-  Add Knowledge:
-
-    <div class="col-12">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Ex: 8.8.8.8 | vg.no | http://vg.no"
-        [(ngModel)]="caseSourceInput"
-        (keyup)="addKnowledge($event)">
-    </div>
-
-  <!-- Second Row -->
-  <div class="col-12">
-
-    <div class="form-group">
-      <label for="exampleFormControlSelect2">Primary Target:</label>
-      <select [(ngModel)]="case.source" class="form-control" id="exampleFormControlSelect3">
-        <option *ngFor="let caseItem of case.objects" [ngValue]="caseItem">{{caseItem.type}} - {{caseItem.name}}</option>
-      </select>
-    </div>
-
-  </div>
-
-
-  <!-- Third Row -->
-
-  <div class="col-12">
-    <button class="btn btn-success btn-md form-control" (click)="submitAnalysis()">Create Analysis</button>
-  </div>
-
-
-  <!-- Second Row -->
     <div class="col-12">
 
-      <div class="form-group">
-        <label for="exampleFormControlSelect2">Objects</label>
-        <select [(ngModel)]="case.objects" multiple class="form-control" id="exampleFormControlSelect2">
-          <option *ngFor="let caseItem of case.objects" [ngValue]="caseItem">{{caseItem.type}} - {{caseItem.name}}</option>
+      <form [formGroup]="case" class="mat-form">
+
+        <mat-form-field>
+          <input matInput type="text" placeholder="Ex: 8.8.8.8 | vg.no | http://vg.no" formControlName="input" (keyup.enter)="addObject()" (keyup.arrowdown)="addObject()">
+          <mat-error *ngIf="case.get('input')?.invalid">Must be IP, Domain, URL or SHA256</mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-select placeholder="Root Object" formControlName="root">
+            <mat-option *ngFor="let object of case.get('objects').value" [value]="object">{{object.name}} - ({{object.type}})</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+
+        <span class=""><label class="small">Object List</label></span>
+        <select class="form-control" multiple placeholder="Root Object">
+          <option *ngFor="let object of case.get('objects').value" [value]="object">{{object.name}} - ({{object.type}})</option>
         </select>
-      </div>
 
+
+        <button md-button class="btn btn-primary submit-btn" type="button" [disabled]="!case.valid">Create Case</button>
+
+
+
+
+
+
+      </form>
     </div>
-
-
-
-
-
-
-
-
-
-
-
 
 

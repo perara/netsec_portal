@@ -21,6 +21,18 @@ import { PcapAnalyzerComponent } from './pcap/pcap-analyzer/pcap-analyzer.compon
 import {WSCaseNamespace, WSPCAPNamespace, WSRootNamespace} from "./app.ws";
 import {FileDropModule} from "ngx-file-drop";
 import { PcapUploaderComponent } from './pcap/pcap-analyzer/pcap-uploader/pcap-uploader.component';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+
+
+import {
+  MatFormFieldModule,
+  MatButtonModule,
+  MatCheckboxModule,
+  MatInputModule,
+  MatOptionModule,
+  MatSelectModule, MatTableModule
+} from '@angular/material';
+import {ReactiveFormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
@@ -41,11 +53,22 @@ import { PcapUploaderComponent } from './pcap/pcap-analyzer/pcap-uploader/pcap-u
     PcapUploaderComponent
   ],
   imports: [
+    ReactiveFormsModule,
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     SocketIoModule,
-    FileDropModule
+    FileDropModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatOptionModule,
+    MatSelectModule,
+    MatInputModule,
+    MatTableModule
+
+
   ],
   providers: [
     HttpErrorHandler,

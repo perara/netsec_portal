@@ -7,6 +7,14 @@ body {
 
 }
 
+.mat-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.mat-form > * {
+  width: 100%;
+}
 
 
 tr.clickable {
@@ -108,3 +116,6 @@ a.clickable {
 
 .border-top { border-top: 1px solid #e5e5e5; }
 .border-bottom { border-bottom: 1px solid #e5e5e5; }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
