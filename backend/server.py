@@ -1,12 +1,13 @@
 #!/usr/bin/python
+import asyncio
 import threading
 import multiprocessing
 from multiprocessing import Process
 
 import socketio
 import tornado.web
-from tornado.ioloop import IOLoop
-from tornado.queues import Queue
+
+import tornado.platform.asyncio
 import os
 from backend import logger, websockets
 
@@ -22,8 +23,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class Webserver(Process):
 
-    def __init__(self, db, port=9999, debug=False):
+    def __init__(self, db, queue, port=9999, debug=False):
         Process.__init__(self)
+        self.queue = queue
         self.db = db
         self._port = port
         self._debug = debug
@@ -59,6 +61,9 @@ class Webserver(Process):
         ], debug=self._debug)
 
     def run(self):
+        tornado.platform.asyncio.AsyncIOMainLoop().install()
+        ioloop = asyncio.get_event_loop()
+
         server = tornado.httpserver.HTTPServer(self._app)
         server.bind(9999)
 
@@ -71,8 +76,21 @@ class Webserver(Process):
         # Now, in each child process, create a MotorClient.
         self._app.settings['db'] = self.db
 
-        IOLoop.current().start()
+        asyncio.ensure_future(self.multiprocessing_handler(), loop=ioloop)
+        ioloop.run_forever()
 
+
+    async def multiprocessing_handler(self):
+
+        while True:
+            result = await self.queue.coro_get()
+
+            if result["worker"] == "suricata":
+
+                await self.sio.emit("pcap_processed", data=result, namespace="/pcap")
+                print(result)
+            else:
+                raise NotImplementedError("Unhandled worker type %s" % result["worker"])
 
 
 

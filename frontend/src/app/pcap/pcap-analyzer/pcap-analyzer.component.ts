@@ -13,10 +13,9 @@ export class PcapAnalyzerComponent implements OnInit {
   constructor(private ws: WSPCAPNamespace) { }
 
   ngOnInit() {
-
-    this.ws.getPCAPData();
-
-
+    this.ws.onPCAPScanFailed().subscribe(x => console.log(x));
+    this.ws.onPCAPScanStarted().subscribe(x => console.log(x));
+    this.ws.onPCAPScanDone().subscribe(x => console.log(x));
   }
 
 }

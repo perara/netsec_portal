@@ -38,8 +38,9 @@ export class PcapUploaderComponent implements OnInit {
 
   public dropped(event: UploadEvent) {
     this.files = event.files;
+    console.log(event)
     for (const droppedFile of event.files) {
-
+      console.log(droppedFile.fileEntry)
       // Is it a file?
       if (droppedFile.fileEntry.isFile) {
         const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
@@ -56,7 +57,9 @@ export class PcapUploaderComponent implements OnInit {
 
           this.pcapService.upload(formData)
             .subscribe((data: any) => {
+              console.log(data.message)
 
+              /*
               data.message.forEach(x => {
 
 
@@ -69,6 +72,7 @@ export class PcapUploaderComponent implements OnInit {
 
                 this.alerts[x.event_type].items.push(x)
               })
+              */
 
 
 

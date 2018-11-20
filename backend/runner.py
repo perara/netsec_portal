@@ -1,5 +1,8 @@
+from multiprocessing import Queue
 
 import motor
+from aioprocessing import AioQueue
+
 from backend import db_validation
 from backend.docker_env import Docker
 from backend.engine.workers import workers
@@ -9,6 +12,7 @@ import asyncio
 import argparse
 
 if __name__ == "__main__":
+    process_queue = AioQueue()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dev", help="Set the application in developer mode.", action="store_true", default=False)
@@ -34,13 +38,13 @@ if __name__ == "__main__":
     """Start all workers."""
     processes = []
     for worker in workers:
-        w = worker(db)
+        w = worker(db, process_queue)
         w.daemon = True
         w.start()
         processes.append(w)
 
     """Start Webserver."""
-    web = Webserver(db, port=9999)
+    web = Webserver(db, process_queue, port=9999)
     web.start()
 
     """Quit Application cleanly."""

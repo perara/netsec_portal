@@ -27,11 +27,18 @@ export class WSPCAPNamespace extends Socket {
     super({ url: '/pcap', options: {} });
   }
 
-
-  getPCAPData() {
-    return this
-      .fromEvent("message")
-      .pipe(map( data => data ));
+  onPCAPScanDone() {
+    return this.fromEvent("scan_done")
   }
+
+  onPCAPScanStarted() {
+    return this.fromEvent("scan_started")
+  }
+
+  onPCAPScanFailed() {
+    return this.fromEvent("scan_failed")
+  }
+
+
 
 }

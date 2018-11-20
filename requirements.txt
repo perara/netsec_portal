@@ -6,3 +6,4 @@ pymongo
 motor
 dpkt
 python_socketio
+aioprocessing

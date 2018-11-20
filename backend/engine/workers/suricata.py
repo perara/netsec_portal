@@ -1,4 +1,5 @@
 import json
+import shutil
 from json import JSONDecodeError
 from os import listdir
 from os.path import join, isfile, getsize
@@ -13,8 +14,9 @@ from backend.runtime_variables import suricata_full_pcap_path, suricata_full_rep
 
 class SuricataWorker(Process):
 
-    def __init__(self, db):
+    def __init__(self, db, queue):
         Process.__init__(self)
+        self.queue = queue
         self.db = db
         self.fsdb = None
         self.change_stream = None
@@ -33,8 +35,9 @@ class SuricataWorker(Process):
 
     async def watch_handler(self):
         await self.watch_pcap()
-        await asyncio.sleep(1, loop=self.loop)
+        await asyncio.sleep(5, loop=self.loop)
         asyncio.ensure_future(self.watch_handler(), loop=self.loop)
+        await asyncio.sleep(1, loop=self.loop)
         asyncio.ensure_future(self.watch_logs(), loop=self.loop)
 
     async def watch_logs(self):
@@ -60,10 +63,22 @@ class SuricataWorker(Process):
 
                 if parsed:
                     """Insert items into fs.files.metadata.alerts"""
-                    await self.db["fs.files"].update_one(dict(filename=report_dir), {'$set': {
+                    updated = await self.db["fs.files"].find_one_and_update(dict(filename=report_dir), {'$set': {
                         'metadata.alerts': items,
                         'metadata.processed': True
-                    }})
+                    }}, projection={'_id': False})
+
+                    """This is a special case where files may have been deleted (by another user) meanwhile scanning."""
+                    if not updated or "_id" not in updated:
+                        break
+
+                    await self.queue.put(dict(
+                        worker="suricata",
+                        fn="done",
+                        data=updated["_id"]
+                    ))
+
+                    shutil.rmtree(report_path)
 
     async def watch_pcap(self):
 
@@ -72,6 +87,8 @@ class SuricataWorker(Process):
         }):
             file_name = grid.filename
             file_body = grid.read()
+
+            file_id = str(grid._id)
 
             with open(join(suricata_full_pcap_path, file_name), "wb") as f:
                 f.write(await file_body)
@@ -85,3 +102,11 @@ class SuricataWorker(Process):
                     runtime_variables.suricata_virtual_report_path,
                     verbose=False)
                 res = x.queue_pcap(file_name)
+
+            self.queue.put(dict(
+                worker="suricata",
+                fn="start",
+                data=file_id
+            ))
+
+
