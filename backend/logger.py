@@ -25,3 +25,7 @@ web.addHandler(ch)
 queue_manager = logging.getLogger('ntt.queue_manager')
 queue_manager.setLevel(logging.DEBUG)
 queue_manager.addHandler(ch)
+
+suricata = logging.getLogger('ntt.suricata')
+suricata.setLevel(logging.DEBUG)
+suricata.addHandler(ch)

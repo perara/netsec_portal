@@ -1,28 +1,49 @@
-import sys
-import motor
 
-from backend.analysis_engine.queue_manager import QueueManager
+import motor
+from backend import db_validation
+from backend.docker_env import Docker
+from backend.engine.workers import workers
 from backend.ng import NG
 from backend.server import Webserver
-from backend.docker_env import Docker
-from backend import runtime_variables
+import asyncio
+import argparse
+
 if __name__ == "__main__":
 
-    if sys.argv[1] == "dev":
-        ng = NG()
-        ng.daemon = True
-        ng.start()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--dev", help="Set the application in developer mode.", action="store_true", default=False)
+    args = parser.parse_args()
 
+    """Start angular dev mode."""
+    angular = NG()
+    if args.dev:
+        angular.daemon = True
+        angular.start()
 
+    """Start docker services."""
     x = Docker()
     x.start("mongo", "ntt_mongodb", ["/data/db"], expose=[27017])
-    x.start("perara/suricata-test", "ntt_suricata", ["/var/log/suricata", "/pcaps", "/reports", "/socket"], args=[])
+    x.start("perara/docker-suricata", "ntt_suricata", ["/var/log/suricata", "/pcaps", "/reports", "/socket"], args=[])
 
+    """Create motor database."""
+    db = motor.MotorClient().ntt
+    asyncio.get_event_loop().run_until_complete(db_validation.create_validation_scheme(db))
     db = motor.MotorClient().ntt
 
-    queue_manager = QueueManager(db)
-    queue_manager.daemon = True
-    queue_manager.start()
 
-    s = Webserver(db, port=9999)
-    s.run()
+    """Start all workers."""
+    processes = []
+    for worker in workers:
+        w = worker(db)
+        w.daemon = True
+        w.start()
+        processes.append(w)
+
+    """Start Webserver."""
+    web = Webserver(db, port=9999)
+    web.start()
+
+    """Quit Application cleanly."""
+    web.join()
+    angular.join()
+    [p.join() for p in processes]

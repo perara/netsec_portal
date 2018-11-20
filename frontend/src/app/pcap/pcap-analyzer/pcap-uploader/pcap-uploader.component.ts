@@ -31,7 +31,7 @@ export class PcapUploaderComponent implements OnInit {
         return obj.concat(this.alerts[key].items);
       }, [])
       .sort((a:any, b:any) => {
-        return a.pcap_cnt > b.pcap_cnt
+        return a.pcap_cnt - b.pcap_cnt
       })
   }
 

@@ -1,10 +1,49 @@
 import time
 from bson.json_util import dumps
-from backend.analysis_engine import engine
 import tornado.web
 import json
 
 import hashlib
+
+
+class MetadataHandler(tornado.web.RequestHandler):
+
+    async def get(self):
+        pass
+
+    async def post(self):
+        pass
+
+
+class MetadataUploadHandler(tornado.web.RequestHandler):
+
+    async def get(self):
+        pass
+
+    async def post(self):
+        pass
+
+
+class ListHandler(tornado.web.RequestHandler):
+
+    async def get(self):
+        pass
+
+    async def post(self):
+        pass
+
+
+class SingleHandler(tornado.web.RequestHandler):
+
+    async def get(self):
+        pass
+
+    async def post(self):
+        pass
+
+
+
+
 
 
 class UploadCaseHandler(tornado.web.RequestHandler):

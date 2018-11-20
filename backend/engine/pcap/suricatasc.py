@@ -465,7 +465,7 @@ class SuricataSocket:
         virtual_dest = os.path.join(self.VIRTUAL_REPORT_PATH, source_pcap)
         physical_dest = os.path.join(self.FULL_REPORT_PATH, source_pcap)
 
-        #shutil.rmtree(physical_dest, ignore_errors=True)
+        shutil.rmtree(physical_dest, ignore_errors=True)
         os.makedirs(physical_dest, exist_ok=True)
 
         commandstr = "pcap-file %s %s" % (virtual_source, virtual_dest)
@@ -473,6 +473,13 @@ class SuricataSocket:
         (command, arguments) = self.sc.parse_command(commandstr)
         res = self.sc.send_command(command, arguments)
         return res
+
+    def check_queue(self):
+        command_str = "pcap-file-number"
+        (command, arguments) = self.sc.parse_command(command_str)
+        res = self.sc.send_command(command, arguments)
+        return res
+
 
 
 if __name__ == "__main__":

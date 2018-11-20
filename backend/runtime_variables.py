@@ -12,3 +12,5 @@ suricata_virtual_report_path = "/reports"
 suricata_full_socket_path = os.path.join(docker_dir, suricata_name, "socket", suricata_socket)
 suricata_full_pcap_path = os.path.join(docker_dir, suricata_name, "pcaps")
 suricata_full_report_path = os.path.join(docker_dir, suricata_name, "reports")
+
+tcp_port = 9999
