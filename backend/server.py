@@ -12,7 +12,8 @@ import os
 from backend import logger, websockets
 
 # https://github.com/mongodb/motor/blob/master/doc/tutorial-tornado.rst#tutorial-using-motor-with-tornado
-from backend.api.case import UploadCaseHandler, GetOneCaseHandler, GetAllCasesHandler, RunCaseHandler
+from backend.api.case import UploadCaseHandler, GetOneCaseHandler, RunCaseHandler, HumanHashHandler, \
+    MetadataHandler, SingleHandler
 from backend.api.pcap import PCAPUploadHandler
 from backend.api.settings import SettingsAnalysisToolsHandler
 from backend.websockets.case import CaseNamespace
@@ -46,9 +47,10 @@ class Webserver(Process):
             (r'/api/pcap/upload', PCAPUploadHandler),
 
             # Case
+            (r'/api/case/hash', HumanHashHandler),
             (r'/api/case/upload', UploadCaseHandler),
-            (r'/api/case/get', GetAllCasesHandler),
-            (r'/api/case/get/(.*)', GetOneCaseHandler),
+            (r'/api/case/metadata', MetadataHandler),
+            (r'/api/case/(.*)', SingleHandler),
             (r'/api/case/run', RunCaseHandler),
 
             # Administration

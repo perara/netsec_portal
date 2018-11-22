@@ -2,7 +2,7 @@ import json
 import shutil
 from json import JSONDecodeError
 from os import listdir
-from os.path import join, isfile, getsize
+from os.path import join, isfile, getsize, isdir
 from multiprocessing import Process
 import asyncio
 from motor import MotorGridFSBucket
@@ -42,9 +42,11 @@ class SuricataWorker(Process):
 
     async def watch_logs(self):
 
-        for report_dir in [x for x in listdir(suricata_full_report_path) if not isfile(join(suricata_full_report_path, x))]:
+        for report_dir in [x for x in listdir(suricata_full_report_path) if isdir(join(suricata_full_report_path, x))]:
             report_path = join(suricata_full_report_path, report_dir)
+
             parsed = True
+
             if "eve.json" in listdir(report_path):
                 eve_file = join(report_path, "eve.json")
                 b = getsize(eve_file)
@@ -68,9 +70,11 @@ class SuricataWorker(Process):
                         'metadata.processed': True
                     }}, projection={'_id': False})
 
+                    shutil.rmtree(report_path)
+
                     """This is a special case where files may have been deleted (by another user) meanwhile scanning."""
                     if not updated or "_id" not in updated:
-                        break
+                        continue
 
                     await self.queue.put(dict(
                         worker="suricata",
@@ -78,7 +82,9 @@ class SuricataWorker(Process):
                         data=updated["_id"]
                     ))
 
-                    shutil.rmtree(report_path)
+
+
+
 
     async def watch_pcap(self):
 

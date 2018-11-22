@@ -7,6 +7,8 @@ import {DomainValidator} from "../../validators/DomainValidator";
 import {ValidatorService} from "../../validator.service";
 import {CaseObject} from "../../classes/case-object";
 import {Case} from "../../classes/case";
+import {AnyTypeValidator} from "../../validators/AnyTypeValidator";
+import {AppCommunicatorService} from "../../services/app-communicator.service";
 
 @Component({
   selector: 'app-case-create',
@@ -17,13 +19,17 @@ import {Case} from "../../classes/case";
 
 
 export class CaseCreateComponent implements OnInit {
-
- // caseSourceInput: String = "";
   case: FormGroup;
 
-  constructor(private fb: FormBuilder,  private validator: ValidatorService, public caseService: CaseService) {
+  constructor(
+    private fb: FormBuilder,
+    private validator: ValidatorService,
+    private caseService: CaseService,
+    private appCommunicator: AppCommunicatorService
+  ) {
     this.case = fb.group({
-      input: fb.control(""),
+      hash: fb.control({value: null, disabled: true}, [Validators.required, Validators.nullValidator]),
+      input: fb.control("", [AnyTypeValidator]),
       root: fb.control(null, Validators.required),
       objects: fb.array([], Validators.minLength(1))
     })
@@ -31,9 +37,47 @@ export class CaseCreateComponent implements OnInit {
 
   ngOnInit() {
 
+    /* Retrieve Initial (Pre Creation) hash */
+   this.getCaseIdentifier();
+
+    this.appCommunicator.listen("/pcap/create")
+      .subscribe(new_pcap_upload => {
+        // PCAPS Are treated as object as well
+        console.log(new_pcap_upload)
+        let newCaseObject = <CaseObject>{
+          name: new_pcap_upload.id,
+          type: "pcap",
+          parent: null,
+          depth: 0,
+          children: [],
+          status: "open",
+          analyzed: false
+        };
+
+        if(this.case.controls.objects.value.filter(x => x.name == newCaseObject.name).length === 0){
+          this.case.controls.objects.value.push(newCaseObject);
+        }
+
+
+      })
+
+  }
+
+  nextTab(){
+
+  }
+
+  getCaseIdentifier(){
+    this.caseService.getHash()
+      .subscribe((x: any) => {
+        this.case.controls.hash.setValue(x.data)
+      });
   }
 
   addObject(){
+    if(this.case.controls.input.value == null)
+      return false;
+
     let type = this.validator.validate(this.case.controls.input.value);
     if(!type){
       this.case.controls.input.setErrors({isValid: false});
@@ -44,7 +88,10 @@ export class CaseCreateComponent implements OnInit {
       name: this.case.controls.input.value,
       type: type,
       depth: 0,
-      parent: null
+      parent: null,
+      children: [],
+      status: "open",
+      analyzed: false
     };
 
     if(!this.case.controls.root.value) {
@@ -57,10 +104,23 @@ export class CaseCreateComponent implements OnInit {
 
   }
 
-  createCase(){
-    let caseData = <CaseObject>this.case.controls.root.value;
-    caseData.parent = null;
-    caseData.children = this.case.controls.objects.value;
+  submitCase(){
+    let caseData = this.case.controls.root.value;
+
+    this.case.controls.objects.value
+      .filter(x => x.name != caseData.name)
+      .forEach(x => x.parent = caseData.name);
+
+    this.caseService.create({
+      case_identifier: this.case.controls.hash.value,
+      root: this.case.controls.root.value,
+      objects: this.case.controls.objects.value
+    }).subscribe(data=>{
+
+    });
+
+    this.case.reset();
+    this.getCaseIdentifier();
 
   }
 

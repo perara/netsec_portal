@@ -1,34 +1,68 @@
 
-    <div class="col-12">
+<div class="row">
 
-      <form [formGroup]="case" class="mat-form">
-
-        <mat-form-field>
-          <input matInput type="text" placeholder="Ex: 8.8.8.8 | vg.no | http://vg.no" formControlName="input" (keyup.enter)="addObject()" (keyup.arrowdown)="addObject()">
-          <mat-error *ngIf="case.get('input')?.invalid">Must be IP, Domain, URL or SHA256</mat-error>
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-select placeholder="Root Object" formControlName="root">
-            <mat-option *ngFor="let object of case.get('objects').value" [value]="object">{{object.name}} - ({{object.type}})</mat-option>
-          </mat-select>
-        </mat-form-field>
+  <div class="col-6">
 
 
-        <span class=""><label class="small">Object List</label></span>
-        <select class="form-control" multiple placeholder="Root Object">
-          <option *ngFor="let object of case.get('objects').value" [value]="object">{{object.name}} - ({{object.type}})</option>
-        </select>
+    <form [formGroup]="case">
+      <div class="form-row">
+
+        <div class="col-12">
+          <span><label class="small" for="case_object_name">Case Identifier</label></span>
+          <input class="form-control" type="text" placeholder="Loading..." id="case_identifier" formControlName="hash" (keyup.arrowdown)="nextTab()">
+        </div>
+
+        <div class="col-12">
+          <span><label class="small" for="case_object_name">Object Name</label></span>
+          <input tabindex="0"
+                 class="form-control"
+                 [ngClass]="{'is-invalid': case.controls.input.value?.length > 0 && !case.controls.input.valid}"
+                 type="text"
+                 placeholder="Ex: 8.8.8.8 | vg.no | http://vg.no" id="case_object_name" formControlName="input" (keyup.enter)="addObject()" (keyup.arrowdown)="addObject()">
+
+          <div class="alert alert-danger" *ngIf="case.controls.input.value?.length > 0 && !case.controls.input.valid">
+            Must be IP, Domain, URL or SHA256
+          </div>
+        </div>
+
+        <div class="col-12">
+          <span><label class="small" for="case_root_object">Root Object</label></span>
+          <select tabindex="0" class="form-control" placeholder="Root Object" formControlName="root" id="case_root_object">
+            <option *ngFor="let o of case.controls.objects.value" [ngValue]="o">{{o.name}} - ({{o.type}})</option>
+          </select>
+          <div class="invalid-feedback">
+            Please select a root object for the case!
+          </div>
+        </div>
 
 
-        <button md-button class="btn btn-primary submit-btn" type="button" [disabled]="!case.valid">Create Case</button>
+        <div class="col-12">
+          <span><label class="small">Object List</label></span>
+          <select class="form-control" multiple placeholder="Root Object">
+            <option *ngFor="let object of case.controls.objects.value" [value]="object">{{object.name}} - ({{object.type}})</option>
+          </select>
+        </div>
+
+        <div class="col-12">
+          <button tabindex="0" md-button class="btn btn-primary submit-btn form-control" type="button" [disabled]="!case.valid" (click)="case.valid && submitCase()">Create Case</button>
+        </div>
+
+
+      </div>
 
 
 
 
 
+    </form>
 
-      </form>
-    </div>
+  </div>
 
+  <div class="col-6">
+    <app-pcap-uploader></app-pcap-uploader>
+  </div>
+
+
+
+</div>
 

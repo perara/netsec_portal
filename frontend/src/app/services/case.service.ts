@@ -20,18 +20,26 @@ export class CaseService {
   }
 
   getCase(caseID): Observable<Case>{
-    return <Observable<Case>>this.http.get("/api/case/get/" + caseID)
+    return <Observable<Case>>this.http.get("/api/case/" + caseID)
       .pipe(
         catchError(this.handleError('getCase', []))
       )
   }
 
-  getAllCases(){
-    return this.http.get("/api/case/get")
+  getCasesMetadata(){
+    return this.http.get("/api/case/metadata")
+      .pipe(
+        catchError(this.handleError('getCasesMetadata', []))
+      );
+
+
+  }
+
+  getHash(){
+    return this.http.get("/api/case/hash")
       .pipe(
         catchError(this.handleError('getAllCases', []))
       );
-
 
   }
 

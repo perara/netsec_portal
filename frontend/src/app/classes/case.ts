@@ -2,8 +2,10 @@ import {CaseObject} from "./case-object";
 
 
 export class Case {
-  source: CaseObject;
   objects: CaseObject[] = [];
-  status: String;
+  root: CaseObject;
+  identifier: string;
+  status: string;
   last_update: number;
+
 }

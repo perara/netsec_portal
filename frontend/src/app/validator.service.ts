@@ -40,6 +40,12 @@ export class ValidatorService {
 
   validate(input){
 
+    if(input == null) {
+      return null;
+    }
+
+    console.log(input)
+
     if(this.isValidIP(input)) {
       return "ip";
     }else if(this.isValidDomain(input)){
@@ -50,7 +56,7 @@ export class ValidatorService {
       return "sha256"
     }
 
-    return false;
+    return null;
   }
 
   constructor() { }

@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import {CaseService} from "../../services/case.service";
 import {CaseObject} from "../../classes/case-object";
 import {WSCaseNamespace} from "../../app.ws";
+import {BehaviorSubject, Observable, Subject} from "rxjs";
+import {Case} from "../../classes/case";
 
 @Component({
   selector: 'app-case-list',
@@ -9,32 +11,46 @@ import {WSCaseNamespace} from "../../app.ws";
   styleUrls: ['./case-list.component.scss']
 })
 export class CaseListComponent implements OnInit {
-  isCLosed: boolean = false;
-  isOpen: boolean = true;
 
-  caseList: CaseObject[];
+  statusFilter = {
+    open: true,
+    close: false
+  };
+
+  cases: Case[];
+  filteredCases: Case[];
+
 
   constructor(
     public caseService: CaseService,
     private socket: WSCaseNamespace
-  ) { }
+  ) {}
 
   ngOnInit() {
-    this.getAllCases();
+    this.$httpCases();
 
     this.socket.on("create", this.onCaseCreate)
   }
 
-  getAllCases(){
+  $httpCases(){
 
-    this.caseService.getAllCases().subscribe((data: CaseObject[]) => {
-      this.caseList = data.reverse();
+    this.caseService.getCasesMetadata().subscribe((data: Case[]) => {
+      this.cases = data.reverse();
+      this.onStatusFilterChange();
     });
 
   }
 
   onCaseCreate(){
     console.log(":D")
+  }
+
+  getCases(){
+    return this.cases.filter(x => this.statusFilter[x.status])
+  }
+
+  onStatusFilterChange(){
+    this.filteredCases = this.getCases();
   }
 
 }

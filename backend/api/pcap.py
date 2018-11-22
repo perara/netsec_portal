@@ -1,6 +1,7 @@
 import tornado.web
 from motor import MotorGridFSBucket
 from backend import util
+from scapy.all import rdpcap, tempfile, Scapy_Exception
 
 
 class PCAPUploadHandler(tornado.web.RequestHandler):
@@ -8,7 +9,7 @@ class PCAPUploadHandler(tornado.web.RequestHandler):
     async def post(self):
         db = self.settings["db"]
         fsdb = MotorGridFSBucket(db)
-        success=False
+        success = False
 
         """Gather file data."""
         file_info = self.request.files['file'][0]
@@ -17,13 +18,36 @@ class PCAPUploadHandler(tornado.web.RequestHandler):
         file_checksum = util.checksum(file_content)
 
         """Check if file exists already."""
-        file_count = await db["fs.files"].count_documents({"metadata.checksum": file_checksum})
-        if file_count == 0:
+        document = await db["fs.files"].find_one({"metadata.checksum": file_checksum})
+        if document:
+            document_id = str(document["_id"])
+            uploaded = False
+        else:
+            """Esure that the uploaded file is parsable as PCAP."""
+            try:
+                ftmp = tempfile.NamedTemporaryFile(delete=True)
+                ftmp.write(file_content)
+                ftmp.flush()
+                rdpcap(ftmp.name)
+                ftmp.close()
+            except Scapy_Exception as e:
+                self.write(dict(
+                    success=False,
+                    data=dict(
+                        message="Submitted file does not qualify as a PCAP file.",
+                        exception=str(e)
+                    )
+                ))
+                self.set_status(500)
+                return
+
             """File does not exist, proceed with upload."""
             async with fsdb.open_upload_stream(file_name, metadata=dict(
-                checksum=file_checksum,
-                processed=False
+                    checksum=file_checksum,
+                    processed=False
             )) as grid_in:
+                document_id = str(grid_in._id)
+                uploaded = True
                 await grid_in.write(file_content)
 
             """Send success=true due to upload success. also refer to sha256."""
@@ -32,7 +56,13 @@ class PCAPUploadHandler(tornado.web.RequestHandler):
         """Send success=false due to the upload failure, however, send the sha256 in return."""
         self.write(dict(
             success=success,
-            message=file_checksum
+            data=dict(
+                filename=file_name,
+                id=document_id,
+                checksum=file_checksum,
+                uploaded=uploaded
+
+            )
         ))
 
         return

@@ -22,22 +22,13 @@ import {WSCaseNamespace, WSPCAPNamespace, WSRootNamespace} from "./app.ws";
 import {FileDropModule} from "ngx-file-drop";
 import { PcapUploaderComponent } from './pcap/pcap-analyzer/pcap-uploader/pcap-uploader.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-
-
-import {
-  MatFormFieldModule,
-  MatButtonModule,
-  MatCheckboxModule,
-  MatInputModule,
-  MatOptionModule,
-  MatSelectModule, MatTableModule
-} from '@angular/material';
 import {ReactiveFormsModule} from "@angular/forms";
+import { FooterComponent } from './app/footer/footer.component';
+import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 
 @NgModule({
   declarations: [
     AppComponent,
-
     DashboardComponent,
     PagenotfoundComponent,
     CaseComponent,
@@ -50,7 +41,8 @@ import {ReactiveFormsModule} from "@angular/forms";
     SettingsAnalysisToolsComponent,
     SettingsUsersComponent,
     PcapAnalyzerComponent,
-    PcapUploaderComponent
+    PcapUploaderComponent,
+    FooterComponent
   ],
   imports: [
     ReactiveFormsModule,
@@ -60,15 +52,7 @@ import {ReactiveFormsModule} from "@angular/forms";
     SocketIoModule,
     FileDropModule,
     BrowserAnimationsModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatFormFieldModule,
-    MatOptionModule,
-    MatSelectModule,
-    MatInputModule,
-    MatTableModule
-
-
+    NgbModule
   ],
   providers: [
     HttpErrorHandler,

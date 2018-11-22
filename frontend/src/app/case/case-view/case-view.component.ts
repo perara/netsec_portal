@@ -14,8 +14,6 @@ import {map} from "rxjs/operators";
 })
 export class CaseViewComponent implements OnInit {
 
-
-
   case: Case;
   caseID: string;
 
@@ -33,9 +31,8 @@ export class CaseViewComponent implements OnInit {
     this.caseID = this.route.snapshot.paramMap.get('id');
 
     this.caseService.getCase(this.caseID).subscribe((_case)=> {
-        this.case = _case
-    })
-
+      this.case = _case
+    });
 
   }
 

@@ -7,3 +7,4 @@ motor
 dpkt
 python_socketio
 aioprocessing
+humanhash3

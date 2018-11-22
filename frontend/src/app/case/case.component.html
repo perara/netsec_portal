@@ -1,12 +1,33 @@
-<div class="row">
-  <div class="col-5">
-    <app-case-create></app-case-create>
-  </div>
-  <div class="col-7">
-    <app-case-list></app-case-list>
-  </div>
+<ngb-tabset type="pills" justify="fill">
 
 
-</div>
+  <ngb-tab title="Cases">
+    <ng-template ngbTabContent>
+      <hr/>
+      <app-case-list></app-case-list>
+    </ng-template>
+  </ngb-tab>
+
+
+  <ngb-tab title="Create Case">
+    <!--<ng-template ngbTabTitle><b>Fancy</b> title</ng-template>-->
+    <ng-template ngbTabContent>
+      <hr/>
+      <app-case-create></app-case-create>
+    </ng-template>
+  </ngb-tab>
+
+  <ngb-tab title="Selected Case" [disabled]="true">
+    <!--<ng-template ngbTabTitle><b>Fancy</b> title</ng-template>-->
+    <ng-template ngbTabContent>
+      <hr/>
+      <app-case-create></app-case-create>
+    </ng-template>
+  </ngb-tab>
+
+</ngb-tabset>
+
+
+
 
 

@@ -1,67 +1,124 @@
 
-<div class="row">
-
-  <div class="col-8">
-    <h2>Case against the {{ case?.source.type }} {{case?.source.name}}</h2>
-
-  </div>
-
-  <div class="col-4">
-
-    <button class="btn btn-warning">Analyze All</button>
-  </div>
-
-</div>
-
-<hr>
-
-<div class="row">
-
-  <div class="col-8">
-    <h2>Object: {{ case?.objects[selectedObjectIndex].name }} ({{ case?.objects[selectedObjectIndex].type }})</h2>
-
-    <button class="btn btn-info">Analyze Selected</button>
-
-  </div>
-
-  <div class="col-4">
-
-    <h2>Objects</h2>
-
-    <table class="table table-hover" (keydown)="scrollTable($event)" tabindex="0">
-      <thead>
-      <tr>
-        <th>Depth</th>
-        <th>Service</th>
-        <th>Object</th>
-        <th>Analyzed</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr
-        *ngFor="let object of case?.objects; let i = index;"
-        (click)="selectObject(i)"
-        [ngClass]="{'table-primary': selectedObjectIndex  === i}">
-        <td> {{ object.depth }}</td>
-        <td>
-          {{object.type}}
-        </td>
-        <td>
-          {{object.name}}
-        </td>
-
-        <td>TODO</td>
 
 
-      </tr>
+ <div class="row">
+   <div class="col-12" *ngIf="case; else loading;">
+     <h2 style="font-weight:normal; !important;">Case: <b>{{ case.identifier }}</b> for {{case.root.name}} ({{case.root.type}})</h2>
+   </div>
+ </div>
+
+ <hr>
+
+ <div class="row">
 
 
-      </tbody>
+   <div class="col-8">
 
-    </table>
+     <div class="ng-if">
+       <div class="row">
+
+         <div class="col-lg-7">
+           <dl class="row">
+             <dt class="col-sm-3">Selected Object</dt>
+             <dd class="col-sm-9">5bf52389d9b51c78976af9e</dd>
+
+             <dt class="col-sm-3">Service</dt>
+             <dd class="col-sm-9">
+               pcap
+             </dd>
+
+             <dt class="col-sm-3">Depth</dt>
+             <dd class="col-sm-9">E0</dd>
+
+             <dt class="col-sm-3">Analyzed</dt>
+             <dd class="col-sm-9">No</dd>
+           </dl>
+         </div>
+
+         <div class="col-lg-5">
+           <span><label class="small" for="case_object_name">Root Object</label></span>
+           <select class="form-control" placeholder="Modify root object">
+             <option></option>
+           </select>
+
+           <span><label class="small" for="case_object_name">Case Status</label></span>
+           <select class="form-control" placeholder="Modify root object">
+             <option>Closed</option>
+             <option>Open</option>
+             <option>Hold</option>
+           </select>
+
+         </div>
 
 
-  </div>
 
-</div>
+       </div>
 
+       <div class="row">
+         <button type="button" class="btn btn-success btn-space">Analyze Object</button>
+         <button type="button" class="btn btn-info btn-space">Modify Object</button>
+         <button type="button" class="btn btn-warning btn-space">Toggle Analyzed</button>
+         <button type="button" class="btn btn-danger btn-space">Delete Object</button>
+
+
+       </div>
+
+
+
+     </div>
+
+
+     <div class="btn-group btn-group-lg" role="group" aria-label="...">
+
+
+
+     </div>
+
+   </div>
+
+
+   <div class="col-4">
+
+     <h5>Objects</h5>
+
+     <table class="table table-hover" (keydown)="scrollTable($event)" tabindex="0">
+       <thead>
+       <tr>
+         <th>Depth</th>
+         <th>Service</th>
+         <th>Object</th>
+         <th>Analyzed</th>
+       </tr>
+       </thead>
+       <tbody>
+       <tr
+         *ngFor="let object of case?.objects; let i = index;"
+         (click)="selectObject(i)"
+         [ngClass]="{'table-primary': selectedObjectIndex  === i}">
+         <td> {{ object.depth }}</td>
+         <td>
+           {{object.type}}
+         </td>
+         <td>
+           {{object.name}}
+         </td>
+
+         <td>TODO</td>
+
+
+       </tr>
+
+
+       </tbody>
+
+     </table>
+
+
+   </div>
+
+
+
+ </div>
+
+
+<ng-template #loading>Loading User Data...</ng-template>

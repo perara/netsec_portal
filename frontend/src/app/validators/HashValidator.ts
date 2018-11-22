@@ -5,6 +5,7 @@ function isSHA256(input){
 }
 
 export function HashValidator(control: AbstractControl) {
+
   if(!isSHA256(control.value)){
     return { validHash: true};
   }
