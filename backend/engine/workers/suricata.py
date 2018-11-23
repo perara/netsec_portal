@@ -56,7 +56,6 @@ class SuricataWorker(Process):
                 {"$set":  {"analyzed": True}}
             )
 
-
     async def watch_logs(self):
 
         for report_dir in [x for x in listdir(suricata_full_report_path) if isdir(join(suricata_full_report_path, x))]:

@@ -1,8 +1,7 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {UploadEvent, UploadFile, FileSystemFileEntry, FileSystemDirectoryEntry, FileSystemEntry} from 'ngx-file-drop';
-import {HttpHeaders} from "@angular/common/http";
-import {PcapService} from "../../../services/pcap.service";
-import {AppCommunicatorService} from "../../../services/app-communicator.service";
+import {UploadFile, FileSystemFileEntry} from 'ngx-file-drop';
+import {PcapService} from "../../services/pcap.service";
+import {AppCommunicatorService} from "../../services/app-communicator.service";
 
 @Component({
   selector: 'app-pcap-uploader',

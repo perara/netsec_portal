@@ -20,11 +20,12 @@ import {SocketIoModule, SocketIoConfig, Socket} from 'ngx-socket-io';
 import { PcapAnalyzerComponent } from './pcap/pcap-analyzer/pcap-analyzer.component';
 import {WSCaseNamespace, WSPCAPNamespace, WSRootNamespace} from "./app.ws";
 import {FileDropModule} from "ngx-file-drop";
-import { PcapUploaderComponent } from './pcap/pcap-analyzer/pcap-uploader/pcap-uploader.component';
+import { PcapUploaderComponent } from './pcap/pcap-uploader/pcap-uploader.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ReactiveFormsModule} from "@angular/forms";
 import { FooterComponent } from './app/footer/footer.component';
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
+import { PcapViewerComponent } from './pcap/pcap-viewer/pcap-viewer.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +43,8 @@ import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
     SettingsUsersComponent,
     PcapAnalyzerComponent,
     PcapUploaderComponent,
-    FooterComponent
+    FooterComponent,
+    PcapViewerComponent
   ],
   imports: [
     ReactiveFormsModule,
