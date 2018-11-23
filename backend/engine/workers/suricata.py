@@ -6,6 +6,7 @@ from os.path import join, isfile, getsize, isdir
 from multiprocessing import Process
 import asyncio
 from motor import MotorGridFSBucket
+from pymongo import ReturnDocument
 
 from backend import logger, runtime_variables
 from backend.engine.pcap.suricatasc import SuricataSocket
@@ -36,9 +37,25 @@ class SuricataWorker(Process):
     async def watch_handler(self):
         await self.watch_pcap()
         await asyncio.sleep(5, loop=self.loop)
-        asyncio.ensure_future(self.watch_handler(), loop=self.loop)
+        await asyncio.ensure_future(self.watch_logs(), loop=self.loop)
         await asyncio.sleep(1, loop=self.loop)
-        asyncio.ensure_future(self.watch_logs(), loop=self.loop)
+        await asyncio.ensure_future(self.sync_pcap_case_object(), loop=self.loop)
+        await asyncio.sleep(1, loop=self.loop)
+        await asyncio.ensure_future(self.watch_handler(), loop=self.loop)
+
+    async def sync_pcap_case_object(self):
+
+        # TODO - Might need rework so that it does not OVERLOAD when db is big.
+
+        async for file in self.db["fs.files"].find({
+            "metadata.analyzed": True
+        }, projection={"metadata.sha256": 1}):
+
+            await self.db.objects.find_one_and_update(
+                {"sha256": file["metadata"]["sha256"]},
+                {"$set":  {"analyzed": True}}
+            )
+
 
     async def watch_logs(self):
 
@@ -65,10 +82,15 @@ class SuricataWorker(Process):
 
                 if parsed:
                     """Insert items into fs.files.metadata.alerts"""
-                    updated = await self.db.objects.find_one_and_update(dict(filename=report_dir), {'$set': {
-                        'metadata.alerts': items,
-                        'metadata.analyzed': True
-                    }}, projection={'_id': True, "metadata.sha256": True})
+                    updated = await self.db["fs.files"].find_one_and_update(
+                        dict(filename=report_dir),
+                        {'$set': {
+                            'metadata.alerts': items,
+                            'metadata.analyzed': True
+                        }},
+                        return_document=ReturnDocument.AFTER,
+                        #projection={'_id': True, "metadata.sha256": True}
+                    )
 
                     shutil.rmtree(report_path)
 
@@ -76,10 +98,10 @@ class SuricataWorker(Process):
                     if not updated or "_id" not in updated:
                         continue
 
-                    await self.queue.put(dict(
+                    self.queue.put(dict(
                         worker="suricata",
                         fn="done",
-                        data=updated["_id"]
+                        data=str(updated["metadata"]["sha256"])
                     ))
 
 

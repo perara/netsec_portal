@@ -26,8 +26,12 @@ if __name__ == "__main__":
     x = Docker()
     x.start("mongo", "ntt_mongodb", ["/data/db"], expose=[27017])
     x.start("perara/docker-suricata", "ntt_suricata", ["/var/log/suricata", "/pcaps", "/reports", "/socket"], args=[])
+    x.start("mariadb", "ntt_mariadb", [], expose=[3306], args=[], kwargs={
+        "environment": {
+            "MYSQL_ROOT_PASSWORD": "root"
+        }
+    })
 
-    """Create motor database."""
     db = motor.MotorClient().ntt
     asyncio.get_event_loop().run_until_complete(db_validation.create_validation_scheme(db))
     db = motor.MotorClient().ntt

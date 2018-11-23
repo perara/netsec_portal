@@ -17,7 +17,7 @@ class Docker:
     def is_available(self):
         return True
 
-    def start(self, image_name, container_name, container_data_paths, expose=[], args=[]):
+    def start(self, image_name, container_name, container_data_paths, expose=[], args=[], kwargs={}):
         data_dir = os.path.join(dir_path, "docker", container_name)
         os.makedirs(data_dir, exist_ok=True)
 
@@ -46,7 +46,7 @@ class Docker:
                                                        name=container_name,
                                                        volumes=path_links,
                                                        ports={"%s/tcp" % x: "%s/tcp" % x for x in expose},
-                                                       detach=True)
+                                                       detach=True, **kwargs)
 
             if container.status != "running":
                 container.start()
