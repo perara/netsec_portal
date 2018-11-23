@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {CaseService} from "../../services/case.service";
 import {CaseObject} from "../../classes/case-object";
 import {WSCaseNamespace} from "../../app.ws";
@@ -12,9 +12,12 @@ import {Case} from "../../classes/case";
 })
 export class CaseListComponent implements OnInit {
 
+  /*Emitter output from CaseList -> Case*/
+  @Output() selectedCaseOutput = new EventEmitter<string>();
+
   statusFilter = {
     open: true,
-    close: false
+
   };
 
   cases: Case[];
@@ -36,6 +39,16 @@ export class CaseListComponent implements OnInit {
 
     this.caseService.getCasesMetadata().subscribe((data: Case[]) => {
       this.cases = data.reverse();
+      this.cases.forEach(x => {
+
+        if(!(x.status in this.statusFilter)){
+          this.statusFilter[x.status] = false;
+        }
+
+      });
+
+
+
       this.onStatusFilterChange();
     });
 
@@ -51,6 +64,10 @@ export class CaseListComponent implements OnInit {
 
   onStatusFilterChange(){
     this.filteredCases = this.getCases();
+  }
+
+  onCaseSelected(selectedCase){
+    this.selectedCaseOutput.emit(selectedCase)
   }
 
 }

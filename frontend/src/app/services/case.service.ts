@@ -4,6 +4,7 @@ import {catchError, map} from "rxjs/operators";
 import {HandleError, HttpErrorHandler} from "./http-error-handler.service";
 import {Case} from "../classes/case";
 import {Observable} from "rxjs";
+import {CaseObject} from "../classes/case-object";
 
 @Injectable({
   providedIn: 'root'
@@ -35,10 +36,20 @@ export class CaseService {
 
   }
 
+  updateMetadata(data){
+    return this.http
+      .post<Case>("/api/case/metadata", data)
+      .pipe(
+        catchError(this.handleError('updateCaseMetadata', []))
+      );
+  }
+
+
+
   getHash(){
     return this.http.get("/api/case/hash")
       .pipe(
-        catchError(this.handleError('getAllCases', []))
+        catchError(this.handleError('getHash', []))
       );
 
   }
@@ -47,12 +58,26 @@ export class CaseService {
     return this.http
       .post<Case>("/api/case/upload", data)
       .pipe(
-        catchError(this.handleError('getAllCases', []))
+        catchError(this.handleError('createCase', []))
       );
-
-
-
   }
+
+  analyze(data){
+    return this.http
+      .post<CaseObject>("/api/case/analyze", data)
+      .pipe(
+        catchError(this.handleError('analyzeCase', []))
+      );
+  }
+
+  deleteObject(data){
+    return this.http
+      .post<any>("/api/case/object/delete", data)
+      .pipe(
+        catchError(this.handleError('deleteObjectFromCase', []))
+      );
+  }
+
 
 
 

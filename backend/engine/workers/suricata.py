@@ -65,10 +65,10 @@ class SuricataWorker(Process):
 
                 if parsed:
                     """Insert items into fs.files.metadata.alerts"""
-                    updated = await self.db["fs.files"].find_one_and_update(dict(filename=report_dir), {'$set': {
+                    updated = await self.db.objects.find_one_and_update(dict(filename=report_dir), {'$set': {
                         'metadata.alerts': items,
-                        'metadata.processed': True
-                    }}, projection={'_id': False})
+                        'metadata.analyzed': True
+                    }}, projection={'_id': True, "metadata.sha256": True})
 
                     shutil.rmtree(report_path)
 
@@ -89,7 +89,7 @@ class SuricataWorker(Process):
     async def watch_pcap(self):
 
         async for grid in self.fsdb.find({
-            "metadata.processed": False
+            "metadata.analyzed": False
         }):
             file_name = grid.filename
             file_body = grid.read()

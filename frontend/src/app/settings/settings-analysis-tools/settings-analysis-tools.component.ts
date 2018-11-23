@@ -22,11 +22,13 @@ export class SettingsAnalysisToolsComponent implements OnInit {
     {service: "reversedns"},*/
   ];
 
-  createToolkit(f){
+  analysis_tools: {} = {};
 
+  createType(f){
     if(f.valid){
-      f.value["services"] = [];
-      this.toolkits.push(f.value);
+      if(!(f.controls.type.value in this.analysis_tools)){
+        this.analysis_tools[f.controls.type.value] = []
+      }
       f.resetForm();
 
       this.syncAnalysisTools() // Sync with HTTP
@@ -34,8 +36,15 @@ export class SettingsAnalysisToolsComponent implements OnInit {
   }
 
   createService(f){
+    console.log(f)
+    
     if(f.valid){
-      this.services.push(f.value);
+      if(!this.analysis_tools[f.controls.type.value].includes(f.controls.service.value)){
+        console.log("add!");
+        this.analysis_tools[f.controls.type.value].push(f.controls.service.value);
+      }
+
+
       f.resetForm();
 
       this.syncAnalysisTools() // Sync with HTTP
@@ -62,10 +71,7 @@ export class SettingsAnalysisToolsComponent implements OnInit {
   }
 
   syncAnalysisTools(){
-    this.settingsService.syncAnalysisTools({
-      toolkits: this.toolkits,
-      services: this.services
-    }).subscribe((data) => {
+    this.settingsService.syncAnalysisTools(this.analysis_tools).subscribe((data) => {
       console.log(data)
     })
 

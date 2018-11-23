@@ -1,3 +1,4 @@
+import humanhash
 import tornado.web
 from motor import MotorGridFSBucket
 from backend import util
@@ -43,8 +44,8 @@ class PCAPUploadHandler(tornado.web.RequestHandler):
 
             """File does not exist, proceed with upload."""
             async with fsdb.open_upload_stream(file_name, metadata=dict(
-                    checksum=file_checksum,
-                    processed=False
+                    sha256=file_checksum,
+                    analyzed=False,
             )) as grid_in:
                 document_id = str(grid_in._id)
                 uploaded = True
@@ -59,9 +60,8 @@ class PCAPUploadHandler(tornado.web.RequestHandler):
             data=dict(
                 filename=file_name,
                 id=document_id,
-                checksum=file_checksum,
-                uploaded=uploaded
-
+                sha256=file_checksum,
+                uploaded=uploaded,
             )
         ))
 

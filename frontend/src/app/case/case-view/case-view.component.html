@@ -1,124 +1,163 @@
 
+<div  *ngIf="case; else loading;">
+
+  <div class="row">
+    <div class="col-12">
+      <h2 style="font-weight:normal; !important;">Case: <b>{{ case.identifier }}</b></h2>
+      <b>Status:</b> {{case.status}}, <b>Root Object:</b> {{case.root.name}} - ({{case.root.type}})
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="row">
 
 
- <div class="row">
-   <div class="col-12" *ngIf="case; else loading;">
-     <h2 style="font-weight:normal; !important;">Case: <b>{{ case.identifier }}</b> for {{case.root.name}} ({{case.root.type}})</h2>
-   </div>
- </div>
+    <div class="col-8">
 
- <hr>
+      <div class="ng-if">
+        <div class="row">
 
- <div class="row">
+          <div class="col-lg-7" *ngIf="selectedObject">
+            <dl class="row">
+              <dt class="col-sm-3">Selected Object</dt>
+              <dd class="col-sm-9">
+                <input class="input" disabled type="text" [(ngModel)]="selectedObject.name" *ngIf="modifySelectedObject" (keypress)="updateSelectedObject($event)">
+                <div *ngIf="!modifySelectedObject">{{selectedObject.name}}</div>
+              </dd>
 
+              <dt class="col-sm-3">Service</dt>
+              <dd class="col-sm-9">
+                <input class="input" disabled type="text" [(ngModel)]="selectedObject.type" *ngIf="modifySelectedObject" (keypress)="updateSelectedObject($event)">
+                <div *ngIf="!modifySelectedObject">{{selectedObject.type}}</div>
+              </dd>
 
-   <div class="col-8">
+              <dt class="col-sm-3">Depth</dt>
+              <dd class="col-sm-9">
+                <input
+                  class="input"
+                  type="number"
+                  [(ngModel)]="selectedObject.depth"
+                  *ngIf="modifySelectedObject"
+                  (keypress)="updateSelectedObject($event)"
+                >
+                <div *ngIf="!modifySelectedObject">{{selectedObject.depth}}</div>
+              </dd>
 
-     <div class="ng-if">
-       <div class="row">
+              <dt class="col-sm-3">Analyzed</dt>
+              <dd class="col-sm-9">
+                <span class="badge badge-danger"
+                      *ngIf="!selectedObject.analyzed"
+                      (click)="selectedObject.analyzed=!selectedObject.analyzed; updateSelectedObject({'key': 'Enter'})">No</span>
+                <span class="badge badge-success"
+                      *ngIf="selectedObject.analyzed"
+                      (click)="selectedObject.analyzed=!selectedObject.analyzed; updateSelectedObject({'key': 'Enter'})">Yes</span>
+              </dd>
+            </dl>
 
-         <div class="col-lg-7">
-           <dl class="row">
-             <dt class="col-sm-3">Selected Object</dt>
-             <dd class="col-sm-9">5bf52389d9b51c78976af9e</dd>
+            <div class="row">
+              <button type="button" class="btn btn-sm btn-success btn-space" (click)="analyzeSelectedObject()">Analyze Object</button>
+              <button
+                type="button"
+                class="btn btn-sm btn-info btn-space"
+                (click)="modifySelectedObject = !modifySelectedObject">Modify Object
+              </button>
 
-             <dt class="col-sm-3">Service</dt>
-             <dd class="col-sm-9">
-               pcap
-             </dd>
+              <button type="button" class="btn btn-sm btn-warning btn-space" (click)="selectedObject.analyzed=!selectedObject.analyzed; updateSelectedObject({'key': 'Enter'})">Toggle Analyzed</button>
+              <button
+                type="button"
+                class="btn btn-sm btn-danger btn-space"
+                (click)="deleteSelectedObject()"
+                *ngIf="case.root._id.$oid != selectedObject._id.$oid"
+              >Delete Object</button>
+            </div>
 
-             <dt class="col-sm-3">Depth</dt>
-             <dd class="col-sm-9">E0</dd>
+          </div>
 
-             <dt class="col-sm-3">Analyzed</dt>
-             <dd class="col-sm-9">No</dd>
-           </dl>
-         </div>
+          <div class="col-lg-5">
+            <span><label class="small" for="caseRootObject">Root Object</label></span>
+            <select id="caseRootObject" [(ngModel)]="case.root" (ngModelChange)="updateCaseMetadata({'root': case.root})" class="form-control" placeholder="Modify root object">
+              <option *ngFor="let caseObject of case.objects" [ngValue]="caseObject">{{caseObject.name}} - ({{caseObject.type}})</option>
+            </select>
 
-         <div class="col-lg-5">
-           <span><label class="small" for="case_object_name">Root Object</label></span>
-           <select class="form-control" placeholder="Modify root object">
-             <option></option>
-           </select>
+            <span><label class="small" for="caseStatus">Case Status</label></span>
+            <select  id="caseStatus" [(ngModel)]="case.status" (ngModelChange)="updateCaseMetadata({'status': case.status})" class="form-control" placeholder="Modify case status">
+              <option value="closed">Closed</option>
+              <option value="open">Open</option>
+              <option value="hold">Hold</option>
+            </select>
 
-           <span><label class="small" for="case_object_name">Case Status</label></span>
-           <select class="form-control" placeholder="Modify root object">
-             <option>Closed</option>
-             <option>Open</option>
-             <option>Hold</option>
-           </select>
-
-         </div>
-
-
-
-       </div>
-
-       <div class="row">
-         <button type="button" class="btn btn-success btn-space">Analyze Object</button>
-         <button type="button" class="btn btn-info btn-space">Modify Object</button>
-         <button type="button" class="btn btn-warning btn-space">Toggle Analyzed</button>
-         <button type="button" class="btn btn-danger btn-space">Delete Object</button>
-
-
-       </div>
-
-
-
-     </div>
-
-
-     <div class="btn-group btn-group-lg" role="group" aria-label="...">
-
-
-
-     </div>
-
-   </div>
-
-
-   <div class="col-4">
-
-     <h5>Objects</h5>
-
-     <table class="table table-hover" (keydown)="scrollTable($event)" tabindex="0">
-       <thead>
-       <tr>
-         <th>Depth</th>
-         <th>Service</th>
-         <th>Object</th>
-         <th>Analyzed</th>
-       </tr>
-       </thead>
-       <tbody>
-       <tr
-         *ngFor="let object of case?.objects; let i = index;"
-         (click)="selectObject(i)"
-         [ngClass]="{'table-primary': selectedObjectIndex  === i}">
-         <td> {{ object.depth }}</td>
-         <td>
-           {{object.type}}
-         </td>
-         <td>
-           {{object.name}}
-         </td>
-
-         <td>TODO</td>
+            <span><label class="small" for="caseStatus">Analyze Objects</label></span>
+            <button type="button" class="btn btn-sm btn-success btn-space form-control" (click)="analyzeCase()">Analyze all {{case.objects.length}} objects</button>
+          </div>
 
 
-       </tr>
+        </div>
 
-
-       </tbody>
-
-     </table>
-
-
-   </div>
+        <hr> <!-- Separator below Analyzed text -->
 
 
 
- </div>
 
 
-<ng-template #loading>Loading User Data...</ng-template>
+      </div>
+
+
+      <div class="btn-group btn-group-lg" role="group" aria-label="...">
+
+
+
+      </div>
+
+    </div>
+
+
+
+
+
+    <div class="col-4" >
+
+      <h5>Objects</h5>
+
+      <table class="table table-hover" (keydown)="scrollTable($event)" tabindex="0">
+        <thead>
+        <tr>
+          <th>Depth</th>
+          <th>Service</th>
+          <th>Object</th>
+          <th>Analyzed</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr
+          *ngFor="let object of case.objects; let i = index;"
+          (click)="selectObject(object, i)"
+          [ngClass]="{'table-primary': selectedObjectIndex  === i}">
+          <td> {{ object.depth }}</td>
+          <td>
+            {{object.type}}
+          </td>
+          <td>
+            {{object.name}}
+          </td>
+
+          <td>
+            <span class="badge badge-danger" *ngIf="!object.analyzed" (click)="object.analyzed=!object.analyzed">No</span>
+            <span class="badge badge-success" *ngIf="object.analyzed" (click)="object.analyzed=!object.analyzed">Yes</span>
+          </td>
+        </tr>
+
+
+        </tbody>
+
+      </table>
+
+
+    </div>
+
+
+
+  </div>
+</div>
+
+<ng-template #loading>Loading Case Data...</ng-template>

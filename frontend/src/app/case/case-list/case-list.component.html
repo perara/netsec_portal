@@ -2,15 +2,12 @@
 
 
 
-<div class="form-check form-check-inline">
-  <input class="form-check-input" type="checkbox" value="open" [(ngModel)]='statusFilter.open' (ngModelChange)='onStatusFilterChange()'>
-  <label class="form-check-label">Open</label>
+
+<div class="form-check form-check-inline" *ngFor="let filter of statusFilter | keyvalue">
+  <input class="form-check-input" type="checkbox" [value]="filter.key" [(ngModel)]='statusFilter[filter.key]' (ngModelChange)='onStatusFilterChange()'>
+  <label class="form-check-label">{{filter.key}}</label>
 </div>
 
-<div class="form-check form-check-inline">
-  <input class="form-check-input" type="checkbox" value="closed" [(ngModel)]='statusFilter.close' (ngModelChange)='onStatusFilterChange()'>
-  <label class="form-check-label">Closed</label>
-</div>
 
 <table class="table table-hover">
   <thead>
@@ -24,13 +21,17 @@
   </tr>
   </thead>
   <tbody>
-  <tr class="clickable" *ngFor="let case of filteredCases" [routerLink]="['/case', case.sha256]" tabindex="0">
-    <td>{{case.sha256| slice:0:15}}</td>
-    <td>{{case.identifier}}</td>
-    <td>{{case.root.name}} ({{case.root.type}})</td>
-    <td>{{case.objects}}</td>
-    <td>{{case.status}}</td>
-    <td>{{case.last_update.$date | date:'medium'}}</td>
+  <tr
+    class="clickable"
+    tabindex="0"
+    *ngFor="let c of filteredCases"
+    (click)="onCaseSelected(c)"> <!--[routerLink]="['/case', case.sha256]" -->
+    <td>{{c.sha256| slice:0:15}}</td>
+    <td>{{c.identifier}}</td>
+    <td>{{c.root.name}} ({{c.root.type}})</td>
+    <td>{{c.objects}}</td>
+    <td>{{c.status}}</td>
+    <td>{{c.last_update.$date | date:'medium'}}</td>
   </tr>
   </tbody>
 

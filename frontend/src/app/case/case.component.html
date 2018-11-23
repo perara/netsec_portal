@@ -4,10 +4,17 @@
   <ngb-tab title="Cases">
     <ng-template ngbTabContent>
       <hr/>
-      <app-case-list></app-case-list>
+      <app-case-list (selectedCaseOutput)="onCaseSelected($event)"></app-case-list>
     </ng-template>
   </ngb-tab>
 
+  <ngb-tab title="Selected Case" [disabled]="!selectedCaseEvent">
+    <!--<ng-template ngbTabTitle><b>Fancy</b> title</ng-template>-->
+    <ng-template ngbTabContent>
+      <hr/>
+      <app-case-view [$selectedCase]="selectedCaseEvent"></app-case-view>
+    </ng-template>
+  </ngb-tab>
 
   <ngb-tab title="Create Case">
     <!--<ng-template ngbTabTitle><b>Fancy</b> title</ng-template>-->
@@ -17,13 +24,7 @@
     </ng-template>
   </ngb-tab>
 
-  <ngb-tab title="Selected Case" [disabled]="true">
-    <!--<ng-template ngbTabTitle><b>Fancy</b> title</ng-template>-->
-    <ng-template ngbTabContent>
-      <hr/>
-      <app-case-create></app-case-create>
-    </ng-template>
-  </ngb-tab>
+
 
 </ngb-tabset>
 

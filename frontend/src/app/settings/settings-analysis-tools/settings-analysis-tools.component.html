@@ -1,113 +1,126 @@
 
-<br>
+<hr>
+
+
+
+<div class="row">
+
+
 
   <div class="col-12">
 
 
-  <div class="row">
 
-    <div class="col-12">
-
-      <form #f="ngForm" (ngSubmit)="createToolkit(f)">
-
-
-        <h4>Create Type</h4>
-        <div class="input-group mb-6">
+    <form #f="ngForm" (ngSubmit)="createType(f)">
+      <h4>Create Type</h4>
+      <div class="input-group mb-6">
 
 
-
-          <div class="input-group-prepend">
-            <span class="input-group-text">Type</span>
-          </div>
-          <input type="text" class="form-control" name="type" ngModel required>
-
-
-          <div class="input-group-prepend">
-            <span class="input-group-text">Description</span>
-          </div>
-          <input type="text" class="form-control" name="description" ngModel required>
-
-          <button  class="btn btn-success">Create</button>
-
+        <!-- Input Type -->
+        <div class="input-group-prepend">
+          <span class="input-group-text">Type</span>
         </div>
-      </form>
+        <input type="text" class="form-control" name="type" ngModel required>
 
-      <br>
 
-      <form #serviceForm="ngForm" (ngSubmit)="createService(serviceForm)">
-        <h4>Create Service</h4>
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="inputGroup-sizing-default">Service</span>
-          </div>
-          <input type="text" class="form-control" name="service" ngModel required>
-          <button class="btn btn-success">Create</button>
+        <!-- Input Description -->
+        <div class="input-group-prepend">
+          <span class="input-group-text">Description</span>
         </div>
-      </form>
+        <input type="text" class="form-control" name="description" ngModel required>
 
 
-    </div>
+        <button  class="btn btn-success">Create</button>
+
+      </div>
+    </form>
+
+    <hr>
+
+    <form #serviceForm="ngForm" (ngSubmit)="createService(serviceForm)">
+      <h4>Create Service</h4>
+      <div class="input-group mb-3">
+
+        <div class="input-group-prepend">
+          <span class="input-group-text" >Service</span>
+        </div>
+        <input type="text" class="form-control" name="service" ngModel required>
+
+        <div class="input-group-prepend">
+          <span class="input-group-text" >Type</span>
+        </div>
+        <select type="text" class="form-control" name="type" ngModel required>
+          <option *ngFor="let type of analysis_tools | keyvalue" [ngValue]="type.value">{{type.key}}</option>
+        </select>
+
+
+        <button class="btn btn-success">Create</button>
+      </div>
+    </form>
+
+
   </div>
+
 </div>
 
 <div class="row">
 
-<div class="col-6">
+  <div class="col-6">
 
-  <div class="row">
+    <div class="row">
 
-    <div *ngFor="let toolkit of toolkits;" class="col-sm-6">
-      <div class="card">
+      <div *ngFor="let toolkit of toolkits;" class="col-sm-6">
+        <div class="card">
 
-        <div class="card-body">
-          <h5 class="card-title">{{ toolkit.type }} </h5>
-
-
-          <p class="card-text">{{ toolkit.description }}</p>
+          <div class="card-body">
+            <h5 class="card-title">{{ toolkit.type }} </h5>
 
 
-          <button *ngFor="let service of services; let index = $index"
-                  type="button"
-                  class="btn btn-danger"
-                  [ngClass]="{
+            <p class="card-text">{{ toolkit.description }}</p>
+
+
+            <button *ngFor="let service of services; let index = $index"
+                    type="button"
+                    class="btn btn-danger"
+                    [ngClass]="{
                           'btn-success': !hasService(service, toolkit.services),
                           'btn-danger': hasService(service, toolkit.services)
                           }"
-                  (click)="addService(toolkit, service)"
-          >
-            {{service.service}}
-          </button>
-          <button class="btn btn-warning" (click)="removeToolkit(index)">
-            Delete
-          </button>
+                    (click)="addService(toolkit, service)"
+            >
+              {{service.service}}
+            </button>
+            <button class="btn btn-warning" (click)="removeToolkit(index)">
+              Delete
+            </button>
 
+          </div>
         </div>
       </div>
-    </div>
 
-  </div> <!-- row -->
-</div>
+    </div> <!-- row -->
+  </div>
 
-<div class="col-6">
-
-
-  <b>List of Services</b>
-  <table class="table table-hover">
-    <thead>
-    <tr>
-      <th>Type</th>
-      <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let service of services;">
-      <td>{{ service.service }}</td>
-      <td><button class="btn btn-danger form-control" (click)="removeService(service)">Delete</button></td>
-    </tr>
-
-    </tbody>
-  </table>
+  <div class="col-6">
 
 
-</div>
+    <b>List of Services</b>
+    <table class="table table-hover">
+      <thead>
+      <tr>
+        <th>Type</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let service of services;">
+        <td>{{ service.service }}</td>
+        <td><button class="btn btn-danger form-control" (click)="removeService(service)">Delete</button></td>
+      </tr>
+
+      </tbody>
+    </table>
+
+
+  </div>
 </div>

@@ -14,6 +14,8 @@ from backend import logger, websockets
 # https://github.com/mongodb/motor/blob/master/doc/tutorial-tornado.rst#tutorial-using-motor-with-tornado
 from backend.api.case import UploadCaseHandler, GetOneCaseHandler, RunCaseHandler, HumanHashHandler, \
     MetadataHandler, SingleHandler
+from backend.api import case
+from backend.api.case_object import DeleteObjectHandler, UploadObjectHandler, AnalyzeObjectHandler, UpdateObjectHandler
 from backend.api.pcap import PCAPUploadHandler
 from backend.api.settings import SettingsAnalysisToolsHandler
 from backend.websockets.case import CaseNamespace
@@ -50,14 +52,24 @@ class Webserver(Process):
             (r'/api/case/hash', HumanHashHandler),
             (r'/api/case/upload', UploadCaseHandler),
             (r'/api/case/metadata', MetadataHandler),
-            (r'/api/case/(.*)', SingleHandler),
+            (r'/api/case/object/delete', case.DeleteObjectHandler),
+            #(r'/api/case/analyze', AnalyzeCaseHandler),
             (r'/api/case/run', RunCaseHandler),
+            (r'/api/case/(.*)', SingleHandler),
+
+
+
+            # CaseObjects
+            (r'/api/object/update', UpdateObjectHandler),
+            (r'/api/object/analyze', AnalyzeObjectHandler),
+            (r'/api/object/upload', UploadObjectHandler),
+            (r'/api/object/delete', DeleteObjectHandler),
 
             # Administration
             (r'/api/settings/analysis_tools', SettingsAnalysisToolsHandler),
 
             # Frontend
-            (r'/(favicon\.ico)', tornado.web.StaticFileHandler, {'path': os.path.join(dir_path, "..", "dist", "favicon.ico")}),
+            (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join(dir_path, "..", "dist", "favicon.ico")}),
             (r'/(.*)', tornado.web.StaticFileHandler, {"default_filename": "index.html", 'path': os.path.join(dir_path, "..", "dist")}),
 
         ], debug=self._debug)
@@ -81,7 +93,6 @@ class Webserver(Process):
         asyncio.ensure_future(self.multiprocessing_handler(), loop=ioloop)
         ioloop.run_forever()
 
-
     async def multiprocessing_handler(self):
 
         while True:
@@ -89,7 +100,10 @@ class Webserver(Process):
 
             if result["worker"] == "suricata":
 
-                await self.sio.emit("pcap_processed", data=result, namespace="/pcap")
+                if result["fn"] == "done":
+                    await self.sio.emit("pcap_processed", data=result, namespace="/pcap")
+
+
                 print(result)
             else:
                 raise NotImplementedError("Unhandled worker type %s" % result["worker"])

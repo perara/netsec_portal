@@ -1,3 +1,4 @@
+import bson
 import datetime
 import time
 from bson.json_util import dumps
@@ -7,6 +8,8 @@ import humanhash
 import hashlib
 
 from pymongo import ReturnDocument
+
+from backend import logger
 
 
 class MetadataHandler(tornado.web.RequestHandler):
@@ -38,9 +41,47 @@ class MetadataHandler(tornado.web.RequestHandler):
         self.write(dumps(results))
         self.set_header("Content-Type", "application/json")
 
+    async def post(self):
+        db = self.settings['db']
 
-async def post(self):
-    pass
+        data = bson.json_util.loads(self.request.body)
+
+        case_id = data["id"]
+        case_metadata = data["metadata"]
+
+        case = await db.case.find_one_and_update(
+            {"_id": case_id},
+            {'$set': case_metadata},
+            return_document=ReturnDocument.AFTER
+        )
+
+        self.write(dumps(case))
+
+
+class DeleteObjectHandler(tornado.web.RequestHandler):
+
+    async def post(self):
+        db = self.settings["db"]
+
+        data = bson.json_util.loads(self.request.body)
+        case_id = data["id"]
+        object_id = data["object_id"]
+
+        result = await db.case.update_one(
+            {
+                "_id": case_id,
+                "root": {"$not": {"$eq": object_id}}  # Disallow deletion of root object.
+            },
+            {
+                "$pull": {"objects": {"$in": [object_id]}}
+            }
+        )
+
+        self.write({
+            "success": result.modified_count > 0
+        })
+
+    get = post
 
 
 class MetadataUploadHandler(tornado.web.RequestHandler):
@@ -131,20 +172,34 @@ class UploadCaseHandler(tornado.web.RequestHandler):
         # Generate sha256 for case
         id_hash = hashlib.sha256(self.request.body).hexdigest()
 
-        """Verify if the object already exists in the database or create it."""
-        db_objects = [await db.objects.find_one_and_update(dict(
-            name=x["name"],
-            type=x["type"]
-        ), {
-            "$set": {
-                "name": x["name"],
-                "type": x["type"],
-                "parent": x["parent"],
-                "children": x["children"],
-                "analyzed": x["analyzed"],
-                "last_update": datetime.datetime.utcnow()
-            }
-        }, upsert=True, return_document=ReturnDocument.AFTER) for x in objects]
+        db_objects = []
+        for x in objects:
+            """If type is pcap, check fs.files collection for existing data, Maybe its already analyzed?."""
+            if x["type"] == "pcap":
+                file = await db["fs.files"].find_one({"metadata.sha256": x["sha256"]})
+                if not file:
+                    logger.web.error("There exists a pcap object, but no file connected to it. This should NOT happen.")
+                    continue
+
+                x["sha256"] = file["metadata"]["sha256"]
+
+            """Verify if the object already exists in the database or create it."""
+            db_object = await db.objects.find_one_and_update(dict(
+                name=x["name"],
+                type=x["type"]
+            ), {
+                "$set": {
+                    "name": x["name"],
+                    "type": x["type"],
+                    "parent": x["parent"],
+                    "children": x["children"],
+                    "analyzed": x["analyzed"],
+                    "sha256": x["sha256"],
+                    "last_update": datetime.datetime.utcnow()
+                }
+            }, upsert=True, return_document=ReturnDocument.AFTER)
+
+            db_objects.append(db_object)
 
         case_data = dict(
             identifier=case_identifier,

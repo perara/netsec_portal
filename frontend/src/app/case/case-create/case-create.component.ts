@@ -43,16 +43,16 @@ export class CaseCreateComponent implements OnInit {
     this.appCommunicator.listen("/pcap/create")
       .subscribe(new_pcap_upload => {
         // PCAPS Are treated as object as well
-        console.log(new_pcap_upload)
-        let newCaseObject = <CaseObject>{
+        let newCaseObject = new CaseObject({
           name: new_pcap_upload.id,
           type: "pcap",
           parent: null,
           depth: 0,
           children: [],
-          status: "open",
-          analyzed: false
-        };
+          analyzed: false,
+          results: {},
+          sha256: new_pcap_upload.sha256
+        });
 
         if(this.case.controls.objects.value.filter(x => x.name == newCaseObject.name).length === 0){
           this.case.controls.objects.value.push(newCaseObject);
@@ -84,15 +84,16 @@ export class CaseCreateComponent implements OnInit {
       return false;
     }
 
-    let caseItem = <CaseObject>{
+    let caseItem = new CaseObject({
       name: this.case.controls.input.value,
       type: type,
       depth: 0,
       parent: null,
       children: [],
-      status: "open",
-      analyzed: false
-    };
+      analyzed: false,
+      results: {},
+      sha256: null
+    });
 
     if(!this.case.controls.root.value) {
       this.case.controls.root.setValue(caseItem);

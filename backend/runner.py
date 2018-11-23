@@ -1,5 +1,3 @@
-from multiprocessing import Queue
-
 import motor
 from aioprocessing import AioQueue
 
