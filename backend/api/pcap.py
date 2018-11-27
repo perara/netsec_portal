@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import humanhash
 import tornado.web
 from motor import MotorGridFSBucket
@@ -50,6 +52,12 @@ class PCAPUploadHandler(tornado.web.RequestHandler):
                 document_id = str(grid_in._id)
                 uploaded = True
                 await grid_in.write(file_content)
+
+            await db.tasks.insert_one(dict(
+                type="pcap_inserted",
+                data=grid_in._id,
+                date=datetime.utcnow()
+            ))
 
             """Send success=true due to upload success. also refer to sha256."""
             success = True

@@ -175,13 +175,14 @@ class UploadCaseHandler(tornado.web.RequestHandler):
         db_objects = []
         for x in objects:
             """If type is pcap, check fs.files collection for existing data, Maybe its already analyzed?."""
-            if x["type"] == "pcap":
+            """if x["type"] == "pcap":
                 file = await db["fs.files"].find_one({"metadata.sha256": x["sha256"]})
                 if not file:
                     logger.web.error("There exists a pcap object, but no file connected to it. This should NOT happen.")
                     continue
 
                 x["sha256"] = file["metadata"]["sha256"]
+            """
 
             """Verify if the object already exists in the database or create it."""
             db_object = await db.objects.find_one_and_update(dict(
@@ -198,9 +199,16 @@ class UploadCaseHandler(tornado.web.RequestHandler):
                     "last_update": datetime.datetime.utcnow()
                 }
             }, upsert=True, return_document=ReturnDocument.AFTER)
-
             db_objects.append(db_object)
 
+            """Insert task for updating of objects."""
+            await db.tasks.insert_one(dict(
+                type="object_create",
+                data=db_object["_id"],
+                date=datetime.datetime.utcnow()
+            ))
+
+        """Create case data object."""
         case_data = dict(
             identifier=case_identifier,
             sha256=id_hash,
@@ -211,11 +219,17 @@ class UploadCaseHandler(tornado.web.RequestHandler):
             status="open"  # TODO
         )
 
+        """Check if case already exists"""
         the_case = await db.case.find_one(dict(sha256=id_hash))
 
         if not the_case:
+            """Case does not exists, insert."""
             await db.case.insert_one(case_data)
+
+            """Retrieve the newly created case"""
             the_case = await db.case.find_one(dict(sha256=id_hash))
+
+            """Write output"""
             self.set_status(200)
             self.write(dumps(dict(
                 success=True,
@@ -224,6 +238,7 @@ class UploadCaseHandler(tornado.web.RequestHandler):
             self.set_header("Content-Type", "application/json")
             return
 
+        """Case was not inserted, send error (double submission etc...)."""
         self.set_status(400)
         self.write(dict(
             success=True,

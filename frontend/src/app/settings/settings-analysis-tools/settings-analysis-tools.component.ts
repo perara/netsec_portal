@@ -36,11 +36,9 @@ export class SettingsAnalysisToolsComponent implements OnInit {
   }
 
   createService(f){
-    console.log(f)
-    
+
     if(f.valid){
       if(!this.analysis_tools[f.controls.type.value].includes(f.controls.service.value)){
-        console.log("add!");
         this.analysis_tools[f.controls.type.value].push(f.controls.service.value);
       }
 

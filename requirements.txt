@@ -8,3 +8,4 @@ python_socketio
 aioprocessing
 humanhash3
 scapy
+aiofiles

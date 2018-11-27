@@ -1,10 +1,11 @@
-import json
 import shutil
+from datetime import datetime
 from json import JSONDecodeError
-from os import listdir
-from os.path import join, isfile, getsize, isdir
+from os.path import join, isfile, getsize
 from multiprocessing import Process
 import asyncio
+
+import aiofiles
 from motor import MotorGridFSBucket
 from pymongo import ReturnDocument
 
@@ -35,105 +36,150 @@ class SuricataWorker(Process):
         loop.run_forever()
 
     async def watch_handler(self):
-        await self.watch_pcap()
-        await asyncio.sleep(5, loop=self.loop)
-        await asyncio.ensure_future(self.watch_logs(), loop=self.loop)
-        await asyncio.sleep(1, loop=self.loop)
-        await asyncio.ensure_future(self.sync_pcap_case_object(), loop=self.loop)
-        await asyncio.sleep(1, loop=self.loop)
+        await self.pcap_copy()
+        await asyncio.sleep(5)
+        await self.pcap_parse_results()
+        await asyncio.sleep(1)
+        await self.pcap_object_sync()
+        await asyncio.sleep(1)
         await asyncio.ensure_future(self.watch_handler(), loop=self.loop)
 
-    async def sync_pcap_case_object(self):
+    async def pcap_object_sync(self):
 
-        # TODO - Might need rework so that it does not OVERLOAD when db is big.
+        async for task in self.db.tasks.find(dict(
+            type="object_create",
+        )):
 
-        async for file in self.db["fs.files"].find({
-            "metadata.analyzed": True
-        }, projection={"metadata.sha256": 1}):
+            case_object = await self.db.objects.find_one(dict(
+                _id=task["data"],
+                type="pcap"
+            ))
 
-            await self.db.objects.find_one_and_update(
-                {"sha256": file["metadata"]["sha256"]},
-                {"$set":  {"analyzed": True}}
+            if not case_object:
+                continue
+
+            file_metadata = await self.db["fs.files"].find_one({
+                "metadata.sha256": case_object["sha256"],
+                "metadata.analyzed": True
+            })
+
+            results = await self.db.objects.find_one_and_update(dict(
+                _id=task["data"]
+            ), {
+                "$set": {
+                    "data.pcap": file_metadata["metadata"]["data"],
+                    "analyzed": True
+                }
+            })
+
+            task["done_at"] = datetime.utcnow()
+            await self.db.tasks_log.insert_one(task)
+            await self.db.tasks.delete_one(dict(
+                _id=task["_id"]
+            ))
+
+    async def pcap_parse_results(self):
+
+        async for task in self.db.tasks.find(dict(
+                type="pcap_fetch_result",
+        )):
+
+            report_path = join(suricata_full_report_path, task["data"])
+            eve_path = join(report_path, "eve.json")
+
+            if not isfile(eve_path):
+                """Eve file does not exists. Wait."""
+                continue
+
+            if not getsize(eve_path) > 0:
+                """Eve file is not populated. Wait."""
+
+            try:
+                async with aiofiles.open(eve_path, mode='r') as f:
+                    data = [line async for line in f]
+            except JSONDecodeError as e:
+                logger.suricata.warning("Could not decode json file at %s. Consider debugging!", eve_path)
+                continue
+
+            """Update file metadata with results."""
+            updated = await self.db["fs.files"].find_one_and_update(
+                dict(filename=task["data"]),
+                {'$set': {
+                    'metadata.data.pcap': data,
+                    'metadata.analyzed': True
+                }},
+                return_document=ReturnDocument.AFTER,
             )
 
-    async def watch_logs(self):
+            """This is a special case where files may have been deleted (by another user) meanwhile scanning."""
+            if not updated or "_id" not in updated:
+                logger.suricata.warning("Not able to update fs.files with filename=%s ", task["data"])
+                continue
 
-        for report_dir in [x for x in listdir(suricata_full_report_path) if isdir(join(suricata_full_report_path, x))]:
-            report_path = join(suricata_full_report_path, report_dir)
+            """Delete report"""
+            shutil.rmtree(report_path)
 
-            parsed = True
-
-            if "eve.json" in listdir(report_path):
-                eve_file = join(report_path, "eve.json")
-                b = getsize(eve_file)
-                if b > 0:
-                    """File has 'some' content."""
-
-                items = []
-                try:
-                    """Try to parse json"""
-                    with open(eve_file, "r") as f:
-                        for line in f.readlines():
-                            items.append(json.loads(line))
-                except JSONDecodeError as e:
-                    logger.suricata.warning("Could not decode json file at %s. Consider debugging!", eve_file)
-                    parsed = False
-
-                if parsed:
-                    """Insert items into fs.files.metadata.alerts"""
-                    updated = await self.db["fs.files"].find_one_and_update(
-                        dict(filename=report_dir),
-                        {'$set': {
-                            'metadata.alerts': items,
-                            'metadata.analyzed': True
-                        }},
-                        return_document=ReturnDocument.AFTER,
-                        #projection={'_id': True, "metadata.sha256": True}
-                    )
-
-                    shutil.rmtree(report_path)
-
-                    """This is a special case where files may have been deleted (by another user) meanwhile scanning."""
-                    if not updated or "_id" not in updated:
-                        continue
-
-                    self.queue.put(dict(
-                        worker="suricata",
-                        fn="done",
-                        data=str(updated["metadata"]["sha256"])
-                    ))
-
-
-
-
-
-    async def watch_pcap(self):
-
-        async for grid in self.fsdb.find({
-            "metadata.analyzed": False
-        }):
-            file_name = grid.filename
-            file_body = grid.read()
-
-            file_id = str(grid._id)
-
-            with open(join(suricata_full_pcap_path, file_name), "wb") as f:
-                f.write(await file_body)
-
-                x = SuricataSocket(
-                    runtime_variables.suricata_full_socket_path,
-                    runtime_variables.suricata_full_pcap_path,
-                    runtime_variables.suricata_full_report_path,
-                    runtime_variables.suricata_virtual_socket_path,
-                    runtime_variables.suricata_virtual_pcap_path,
-                    runtime_variables.suricata_virtual_report_path,
-                    verbose=False)
-                res = x.queue_pcap(file_name)
-
-            self.queue.put(dict(
-                worker="suricata",
-                fn="start",
-                data=file_id
+            """Insert task into log and remove from task queue."""
+            task["done_at"] = datetime.utcnow()
+            await self.db.tasks_log.insert_one(task)
+            await self.db.tasks.delete_one(dict(
+                _id=task["_id"]
             ))
+
+    async def pcap_copy(self):
+
+        """
+        Routine to copy pcaps from mongodb => docker
+        :return:
+        """
+
+        async for task in self.db.tasks.find({
+            "type": "pcap_inserted"
+        }):
+            """
+            {
+            type: "pcap_inserted",
+            data: <md5>
+            date: <date>
+            }
+            """
+
+            file_metadata = await self.db["fs.files"].find_one(dict(
+                _id=task["data"]
+            ))
+
+            with open(join(suricata_full_pcap_path, file_metadata["filename"]), "wb") as f:
+                await self.fsdb.download_to_stream(file_metadata["_id"], f)
+
+            x = SuricataSocket(
+                runtime_variables.suricata_full_socket_path,
+                runtime_variables.suricata_full_pcap_path,
+                runtime_variables.suricata_full_report_path,
+                runtime_variables.suricata_virtual_socket_path,
+                runtime_variables.suricata_virtual_pcap_path,
+                runtime_variables.suricata_virtual_report_path,
+                verbose=False)
+
+            result = x.queue_pcap(file_metadata["filename"])
+
+            if "return" not in result or result["return"] != "OK":
+                continue
+
+            task["done_at"] = datetime.utcnow()
+            await self.db.tasks_log.insert_one(task)
+
+            await self.db.tasks.delete_one(dict(
+                _id=task["_id"]
+            ))
+
+            await self.db.tasks.insert_one(dict(
+                type="pcap_fetch_result",
+                data=file_metadata["filename"],
+                date=datetime.utcnow()
+            ))
+
+
+
+
 
 
