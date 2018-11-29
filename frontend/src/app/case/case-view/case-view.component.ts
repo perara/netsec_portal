@@ -4,6 +4,7 @@ import {CaseService} from "../../services/case.service";
 import {Case} from "../../classes/case";
 import {CaseObject} from "../../classes/case-object";
 import {ObjectService} from "../../services/object.service";
+import {AppCommunicatorService} from "../../services/app-communicator.service";
 
 @Component({
   selector: 'app-case-view',
@@ -28,7 +29,8 @@ export class CaseViewComponent implements OnInit {
     private router: Router,
     private caseService: CaseService,
     private objectService: ObjectService,
-    private differs: KeyValueDiffers
+    private differs: KeyValueDiffers,
+    private appCommunicationService: AppCommunicatorService
   ) { }
 
   ngOnInit() {
@@ -42,6 +44,8 @@ export class CaseViewComponent implements OnInit {
     this.caseService.getCase(this.caseID).subscribe((_case: Case)=> {
 
       this.case = _case;
+      this.appCommunicationService.emit("/case/enter", this.case);
+
       this.caseDiffer = this.differs.find(this.case).create();
 
       // Select first object

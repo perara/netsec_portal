@@ -26,6 +26,7 @@ import {ReactiveFormsModule} from "@angular/forms";
 import { FooterComponent } from './app/footer/footer.component';
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 import { PcapViewerComponent } from './pcap/pcap-viewer/pcap-viewer.component';
+import {CookieService} from "ngx-cookie-service";
 
 @NgModule({
   declarations: [
@@ -60,7 +61,8 @@ import { PcapViewerComponent } from './pcap/pcap-viewer/pcap-viewer.component';
     HttpErrorHandler,
     WSRootNamespace,
     WSCaseNamespace,
-    WSPCAPNamespace
+    WSPCAPNamespace,
+    CookieService
 
   ],
   bootstrap: [AppComponent]
