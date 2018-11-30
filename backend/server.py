@@ -17,7 +17,7 @@ from backend.api.case import UploadCaseHandler, GetOneCaseHandler, RunCaseHandle
 from backend.api import case
 from backend.api.case_object import DeleteObjectHandler, UploadObjectHandler, AnalyzeObjectHandler, UpdateObjectHandler
 from backend.api.pcap import PCAPUploadHandler
-from backend.api.settings import SettingsAnalysisToolsHandler
+from backend.api.settings import SettingsInsertHandler, SettingsDeleteHandler, SettingsGetHandler
 from backend.websockets.case import CaseNamespace
 from backend.websockets.pcap import PCAPNamespace
 
@@ -66,13 +66,17 @@ class Webserver(Process):
             (r'/api/object/delete', DeleteObjectHandler),
 
             # Administration
-            (r'/api/settings/analysis_tools', SettingsAnalysisToolsHandler),
+            (r'/api/settings/insert', SettingsInsertHandler),
+            (r'/api/settings/delete', SettingsDeleteHandler),
+            (r'/api/settings/get/(.*)', SettingsGetHandler),
+
+
 
             # Frontend
-            (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join(dir_path, "..", "dist", "favicon.ico")}),
+            (r'/(favicon.ico)', tornado.web.StaticFileHandler, {"path": os.path.join(dir_path, "..", "dist")}),
             (r'/(.*)', tornado.web.StaticFileHandler, {"default_filename": "index.html", 'path': os.path.join(dir_path, "..", "dist")}),
 
-        ], debug=self._debug)
+        ], debug=False)
 
     def run(self):
         tornado.platform.asyncio.AsyncIOMainLoop().install()

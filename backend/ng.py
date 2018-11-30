@@ -15,3 +15,7 @@ class NG(threading.Thread):
         os.chdir(wd)
         logger.angular.info("ng build started and listening.")
 
+
+if __name__ == "__main__":
+    x = NG()
+    x.run()

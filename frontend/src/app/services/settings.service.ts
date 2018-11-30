@@ -18,19 +18,27 @@ export class SettingsService {
     this.handleError = httpErrorHandler.createHandleError('CustomerService');
   }
 
-  syncAnalysisTools(data){
+  insertSetting(data){
     return this.http
-      .post("/api/settings/analysis_tools", data)
+      .post("/api/settings/insert", data)
       .pipe(
-        catchError(this.handleError('syncAnalysisTools', []))
+        catchError(this.handleError('/api/settings', []))
       );
   }
 
-  getAnalysisTools() {
+  deleteSetting(data){
     return this.http
-      .get("/api/settings/analysis_tools")
+      .post("/api/settings/delete", data)
       .pipe(
-        catchError(this.handleError('getAnalysisTools', []))
+        catchError(this.handleError('/api/settings/delete', []))
+      );
+  }
+
+  getSetting(setting_type) {
+    return this.http
+      .get("/api/settings/get/" + setting_type)
+      .pipe(
+        catchError(this.handleError('/api/settings/get', []))
       );
 
   }

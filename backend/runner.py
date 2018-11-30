@@ -16,9 +16,12 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--dev", help="Set the application in developer mode.", action="store_true", default=False)
     args = parser.parse_args()
 
+    debug = False
+
     """Start angular dev mode."""
     angular = NG()
     if args.dev:
+        debug = True
         angular.daemon = True
         angular.start()
 
@@ -26,16 +29,10 @@ if __name__ == "__main__":
     x = Docker()
     x.start("mongo", "ntt_mongodb", ["/data/db"], expose=[27017])
     x.start("perara/docker-suricata", "ntt_suricata", ["/var/log/suricata", "/pcaps", "/reports", "/socket"], args=[])
-    x.start("mariadb", "ntt_mariadb", [], expose=[3306], args=[], kwargs={
-        "environment": {
-            "MYSQL_ROOT_PASSWORD": "root"
-        }
-    })
 
     db = motor.MotorClient().ntt
     asyncio.get_event_loop().run_until_complete(db_validation.create_validation_scheme(db))
     db = motor.MotorClient().ntt
-
 
     """Start all workers."""
     processes = []
@@ -46,7 +43,7 @@ if __name__ == "__main__":
         processes.append(w)
 
     """Start Webserver."""
-    web = Webserver(db, process_queue, port=9999)
+    web = Webserver(db, process_queue, port=9999, debug=debug)
     web.start()
 
     """Quit Application cleanly."""

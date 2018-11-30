@@ -9,106 +9,108 @@ import {SettingsService} from "../../services/settings.service";
 })
 export class SettingsAnalysisToolsComponent implements OnInit {
 
-  toolkits = [
-    /*{type: "ip", description: "8.8.8.8", services: [{service: "cyman"}]},
-    {type: "domain", description: "domain.no",services: [{service: "virustotal"}]},
-    {type: "url", description: "http(s)://domain.no",services: [{service: "virustotal"}]},
-    {type: "sha256", description: "35A442F64...",services: [{service: "virustotal"}]},*/
-  ];
+  object_types = [];
+  services = [];
 
-  services = [
-    /*{service: "virustotal"},
-    {service: "cyman"},
-    {service: "reversedns"},*/
-  ];
-
-  analysis_tools: {} = {};
-
-  createType(f){
-    if(f.valid){
-      if(!(f.controls.type.value in this.analysis_tools)){
-        this.analysis_tools[f.controls.type.value] = []
-      }
-      f.resetForm();
-
-      this.syncAnalysisTools() // Sync with HTTP
-    }
+  constructor(private settingsService: SettingsService) {
   }
 
-  createService(f){
+  addType(form_data: FormGroup){
+    if(!form_data.valid)
+      return false;
 
-    if(f.valid){
-      if(!this.analysis_tools[f.controls.type.value].includes(f.controls.service.value)){
-        this.analysis_tools[f.controls.type.value].push(f.controls.service.value);
-      }
+    let settings_type = "object_type";
+    let type = form_data.value.type;
+    let description = form_data.value.description;
 
+    this.settingsService.insertSetting({
+      settings_type: settings_type,
+      type: type,
+      description: description,
+      services: []
+    }).subscribe(x => {
+      this.object_types.push(x)
+    })
 
-      f.resetForm();
-
-      this.syncAnalysisTools() // Sync with HTTP
-    }
-  }
-
-
-  hasService(service, type_service){
-    return type_service.some(e => e.service == service.service);
-  }
-
-  addService(type, service){
-
-    if(this.hasService(service, type.services)){
-      // Remove
-      const index = type.services.findIndex(e => e.service == service.service);
-      type.services.splice(index, 1);
-    }else{
-      type.services.push(service)
-    }
-
-    this.syncAnalysisTools() // Sync with HTTP
 
   }
 
-  syncAnalysisTools(){
-    this.settingsService.syncAnalysisTools(this.analysis_tools).subscribe((data) => {
-      console.log(data)
+  deleteType(type) {
+
+    this.settingsService.deleteSetting(type)
+      .subscribe(x => {
+
+        this.object_types = this.object_types.filter(y => y !== type)
+      })
+  }
+
+  addService(form_data){
+    if(!form_data.valid)
+      return false;
+
+    let settings_type = "services";
+    let type = form_data.value.service;
+    let description = form_data.value.description;
+
+    this.settingsService.insertSetting({
+      settings_type: settings_type,
+      type: type,
+      description: description,
+    }).subscribe(x => {
+      this.services.push(x)
     })
 
   }
 
-  removeToolkit(index){
-    this.toolkits.splice(index, 1);
+  toggleServiceForType(service, object_type){
 
-    this.syncAnalysisTools() // Sync with HTTP
-  }
+    if(this.typeHasService(service, object_type)) {
+      object_type.services = object_type.services.filter(x => x.$oid !== service._id.$oid);
+    }else{
+      object_type.services.push(service._id);
+    }
 
-  removeService(service){
-    // Remove service from list of services
-    const index = this.services.findIndex(e => e == service);
-    this.services.splice(index, 1);
+    this.settingsService.insertSetting(object_type)
+      .subscribe(x => {
 
-    this.syncAnalysisTools(); // Sync with HTTP
+      })
 
-    // Clean from types
-    this.toolkits.forEach(x => {
-      const i = x.services.findIndex(e => e.service == service.service);
-      if(i > -1) {
-        x.services.splice(i, 1);
-      }
-
-    });
 
   }
 
-  constructor(private settingsService: SettingsService) { }
+
+  typeHasService(service, object_type){
+    return object_type.services.includes(service._id);
+  }
 
   ngOnInit() {
 
-    this.settingsService.getAnalysisTools()
-      .subscribe((data: any) => {
-        this.toolkits = data.toolkits;
-        this.services = data.services;
-      })
+    this.settingsService.getSetting("object_type")
+      .subscribe((x) => {
+
+        if(Array.isArray(x)){
+          this.object_types.push(... x);
+          return;
+        }
+
+        this.object_types.push(x)
+      });
+
+
+    this.settingsService.getSetting("services")
+      .subscribe((x) => {
+
+        if(Array.isArray(x)){
+          this.services.push(... x);
+          return;
+        }
+
+        this.services.push(x)
+      });
+
+
 
   }
-
 }
+
+

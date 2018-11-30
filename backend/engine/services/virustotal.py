@@ -3,20 +3,20 @@ from backend.engine.services import BaseService
 
 class VirusTotal(BaseService):
 
-    def ipv4(self):
+    async def ipv4(self):
         pass
 
-    def ipv6(self):
+    async def ipv6(self):
         pass
 
-    def dns(self):
+    async def dns(self):
         pass
 
-    def http(self):
+    async def http(self):
         pass
 
-    def url(self):
+    async def url(self):
         pass
 
-    def domain(self):
+    async def domain(self):
         pass

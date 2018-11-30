@@ -1,51 +1,62 @@
 import json
-import pymongo
-
 import tornado.web
-from bson.json_util import dumps
-import time
+from bson.json_util import dumps, loads
+from pymongo import ReturnDocument
 
-class SettingsAnalysisToolsHandler(tornado.web.RequestHandler):
+
+class SettingsInsertHandler(tornado.web.RequestHandler):
 
     async def post(self):
         # Retrieve DB
         db = self.settings['db']
 
         # Retrieve post data
-        data = json.loads(self.request.body)
-
-        if "toolkits" not in data:
-            self.set_status(400)
-            self.write({
-                "success": False,
-                "message": "toolkits was not found in the data payload."
-            })
-            return
-
-        if "services" not in data:
-            self.set_status(400)
-            self.write({
-                "success": False,
-                "message": "services was not found in the data payload."
-            })
-            return
-
-        # Update timestamp
-        data["time"] = int(time.time())
+        data = loads(self.request.body)
 
         # Insert newest settings
-        result = await db.settings_toolkit.insert_one(data)
+        await db.settings.find_one_and_update(dict(
+            _id=data["_id"]
+        ), {
+            "$set": data
+        }, upsert=True, return_document=ReturnDocument.AFTER)
 
         self.write(dumps(data))
         self.set_header("Content-Type", "application/json")
         return
+    get=post
 
-    async def get(self):
+
+class SettingsDeleteHandler(tornado.web.RequestHandler):
+
+    async def post(self):
         # Retrieve DB
         db = self.settings['db']
 
-        settings_toolkit = await db.settings_toolkit.find_one(sort=[('_id', pymongo.DESCENDING)])
+        # Retrieve post data
+        data = loads(self.request.body)
 
-        self.write(dumps(settings_toolkit))
+        # Insert newest settings
+        await db.settings.delete_many(data)
+
+        self.write(dumps(data))
+        self.set_header("Content-Type", "application/json")
+        return
+    get=post
+
+
+class SettingsGetHandler(tornado.web.RequestHandler):
+
+    async def get(self, settings_type):
+
+        db = self.settings['db']
+
+        settings = [doc async for doc in db.settings.find(dict(
+            settings_type=settings_type
+        ))]
+
+        if settings and len(settings) == 1:
+            settings = settings[0]
+
+        self.write(dumps(settings))
         self.set_header("Content-Type", "application/json")
         return

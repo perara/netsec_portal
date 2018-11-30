@@ -9,3 +9,6 @@ aioprocessing
 humanhash3
 scapy
 aiofiles
+aiohttp
+cchardet
+aiodns
